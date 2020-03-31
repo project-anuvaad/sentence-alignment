@@ -15,22 +15,24 @@ target_corp = []
 two_files = True
 no_of_words = 200
 count_random = 3
+file_encoding = 'utf-16'
+
 
 def parse_csv():
     path = r'C:\Users\Vishal\Desktop\anuvaad\Facebook LASER\resources\Input\src-ik-en.txt'
     path_indic = r'C:\Users\Vishal\Desktop\anuvaad\Facebook LASER\resources\Input\target-ik-hi.txt'
     if two_files:
-        with codecs.open(path, 'r', 'utf-8-sig') as txt_file:
+        with codecs.open(path, 'r', file_encoding) as txt_file:
             for row in txt_file:
                 if len(row.rstrip()) != 0:
                     source.append(row.rstrip())
-        with codecs.open(path_indic, 'r', 'utf-8-sig') as txt_file:
+        with codecs.open(path_indic, 'r', file_encoding) as txt_file:
             for row in txt_file:
                 if len(row.rstrip()) != 0:
                     target_corp.append(row.rstrip())
 
     else:
-        with codecs.open(path, 'r', 'utf-16') as csv_file:
+        with codecs.open(path, 'r', file_encoding) as csv_file:
             csv_reader = csv.reader((l.replace('\0', '') for l in csv_file))
             for row in csv_reader:
                 if len(row) != 0:
@@ -43,7 +45,7 @@ def post_process_input(word_count):
 
 
 def write_dict_to_csv(list, path):
-    with codecs.open(path, 'w', 'utf-16') as csv_file:
+    with codecs.open(path, 'w', file_encoding) as csv_file:
         csv_writer = csv.writer(csv_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         for row in list:
             csv_writer.writerow(row)
