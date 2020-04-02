@@ -18,11 +18,9 @@ count_random = 3
 file_encoding = 'utf-16'
 
 
-def parse_csv():
-    path = r'C:\Users\Vishal\Desktop\anuvaad\Facebook LASER\resources\Input\src-ik-en.txt'
-    path_indic = r'C:\Users\Vishal\Desktop\anuvaad\Facebook LASER\resources\Input\target-ik-hi.txt'
+def parse_csv(path_eng, path_indic):
     if two_files:
-        with codecs.open(path, 'r', file_encoding) as txt_file:
+        with codecs.open(path_eng, 'r', file_encoding) as txt_file:
             for row in txt_file:
                 if len(row.rstrip()) != 0:
                     source.append(row.rstrip())
@@ -32,7 +30,7 @@ def parse_csv():
                     target_corp.append(row.rstrip())
 
     else:
-        with codecs.open(path, 'r', file_encoding) as csv_file:
+        with codecs.open(path_eng, 'r', file_encoding) as csv_file:
             csv_reader = csv.reader((l.replace('\0', '') for l in csv_file))
             for row in csv_reader:
                 if len(row) != 0:
@@ -58,7 +56,7 @@ def get_vect(query_in, lang, address='127.0.0.1:8050'):
     return resp["embedding"]
 
 
-def build_index():
+def build_index(source_embeddings, target_embeddings):
     for sentence in source:
         source_embeddings.append(get_vect(sentence, lang='en'))
     for sentence in target_corp:
@@ -95,50 +93,58 @@ def get_mismatch_index(target_embeddings, source_embedding):
     return cs_mismatch
 
 
-embedded_dict = {}
-mismatch_dict = {}
-source_reformatted = []
-target_refromatted = []
+def process(path, path_indic):
+    embedded_dict = {}
+    mismatch_dict = {}
+    source_reformatted = []
+    target_refromatted = []
+    mismatch_output = []
+    similarity_out = []
+    source_embeddings = []
+    target_embeddings = []
 
-mismatch_output = []
-similarity_out = []
+    parse_csv(path, path_indic)
+    build_index(source_embeddings, target_embeddings)
+
+    for i, embeddings in enumerate(source_embeddings):
+        embedded_dict[i] = get_target_sentence(target_embeddings, embeddings)
+        mismatch_dict[i] = get_mismatch_index(target_embeddings, embeddings)
+
+    for key in embedded_dict:
+        tup = str(key) + "|" + str(embedded_dict[key][0]), " " + str(embedded_dict[key][1])
+        similarity_out.append(tup)
+
+    for key in mismatch_dict:
+        for internal_key in mismatch_dict[key]:
+            tup = str(key) + " | " + str(internal_key), "   " + str(mismatch_dict[key][internal_key])
+            mismatch_output.append(tup)
+
+    mismatch_output = sorted(mismatch_output, key=lambda x: x[1], reverse=True)
+    generate_output(source_reformatted, target_refromatted, mismatch_output, similarity_out)
 
 
-source_embeddings = []
-target_embeddings = []
+def generate_output(source_reformatted, target_refromatted, mismatch_output, similarity_out):
+    for j, sentence in enumerate(source):
+        tup = j, sentence
+        source_reformatted.append(tup)
 
-parse_csv()
-build_index()
+    for j, sentence in enumerate(target_corp):
+        tup = j, sentence
+        target_refromatted.append(tup)
 
-for i, embeddings in enumerate(source_embeddings):
-    embedded_dict[i] = get_target_sentence(target_embeddings, embeddings)
-    mismatch_dict[i] = get_mismatch_index(target_embeddings, embeddings)
+    write_dict_to_csv(mismatch_output, out_path)
+    write_dict_to_csv(similarity_out, similarity_path)
+    write_dict_to_csv(source_reformatted, source_enu)
+    write_dict_to_csv(target_refromatted, target_enu)
 
-for key in embedded_dict:
-    tup = str(key) + "|" + str(embedded_dict[key][0]), " " + str(embedded_dict[key][1])
-    similarity_out.append(tup)
 
-for key in mismatch_dict:
-    for internal_key in mismatch_dict[key]:
-        tup = str(key) + " | " + str(internal_key),  "   " + str(mismatch_dict[key][internal_key])
-        mismatch_output.append(tup)
 
-mismatch_output = sorted(mismatch_output, key = lambda x:x[1], reverse = True)
-
-for j, sentence in enumerate(source):
-    tup = j, sentence
-    source_reformatted.append(tup)
-
-for j, sentence in enumerate(target_corp):
-    tup = j, sentence
-    target_refromatted.append(tup)
+p = r'C:\Users\Vishal\Desktop\anuvaad\Facebook LASER\resources\Input\src-ik-en.txt'
+p_indic = r'C:\Users\Vishal\Desktop\anuvaad\Facebook LASER\resources\Input\target-ik-hi.txt'
 
 out_path = r'C:\Users\Vishal\Desktop\anuvaad\Facebook LASER\resources\Result\mismatch.txt'
 similarity_path = r'C:\Users\Vishal\Desktop\anuvaad\Facebook LASER\resources\Result\similarity.txt'
 source_enu = r'C:\Users\Vishal\Desktop\anuvaad\Facebook LASER\resources\Result\source-enu.txt'
 target_enu = r'C:\Users\Vishal\Desktop\anuvaad\Facebook LASER\resources\Result\target-enu.txt'
 
-write_dict_to_csv(mismatch_output, out_path)
-write_dict_to_csv(similarity_out, similarity_path)
-write_dict_to_csv(source_reformatted, source_enu)
-write_dict_to_csv(target_refromatted, target_enu)
+process(p, p_indic)
