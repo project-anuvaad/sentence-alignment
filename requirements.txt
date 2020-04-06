@@ -1,0 +1,7 @@
+codecs
+numpy
+requests
+scipy
+csv
+random
+
