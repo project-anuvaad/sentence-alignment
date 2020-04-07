@@ -62,5 +62,5 @@ class AlignmentService:
 
 
     def generate_output(self, source_reformatted, target_refromatted):
-        alignmentutils.write_dict_to_csv(source_reformatted, source_enu)
-        alignmentutils.write_dict_to_csv(target_refromatted, target_enu)
+        alignmentutils.write_output(source_reformatted, source_enu)
+        alignmentutils.write_output(target_refromatted, target_enu)

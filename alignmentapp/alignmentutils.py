@@ -37,11 +37,10 @@ class AlignmentUtils:
                         target_corp.append(row[1])
 
 
-    def write_dict_to_csv(self, list, path):
-        with codecs.open(path, 'w', file_encoding) as csv_file:
-            csv_writer = csv.writer(csv_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+    def write_output(self, list, path):
+        with codecs.open(path, 'w', file_encoding) as txt_file:
             for row in list:
-                csv_writer.writerow(row)
+                txt_file.write(row + "\r\n")
 
 
     def cscalc(self, vector_one, vector_two):
