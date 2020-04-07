@@ -147,4 +147,6 @@ similarity_path = r'C:\Users\Vishal\Desktop\anuvaad\Facebook LASER\resources\Res
 source_enu = r'C:\Users\Vishal\Desktop\anuvaad\Facebook LASER\resources\Result\source-enu.txt'
 target_enu = r'C:\Users\Vishal\Desktop\anuvaad\Facebook LASER\resources\Result\target-enu.txt'
 
-process(p, p_indic)
+#process(p, p_indic)
+
+print("Started.")
