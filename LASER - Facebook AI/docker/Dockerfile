@@ -63,4 +63,4 @@ EXPOSE 80
 
 COPY ./app.py /app/app.py
 
-CMD ["/bin/bash"]
+CMD ["python", "/app/app.py"]
