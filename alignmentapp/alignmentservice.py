@@ -1,5 +1,6 @@
 #!/bin/python
 import codecs
+import os
 
 import numpy as np
 from scipy.spatial import distance
@@ -7,18 +8,36 @@ from flask import jsonify
 from .laser import Laser
 from alignmentapp.alignmentutils import AlignmentUtils
 
-p = r'C:\Users\Vishal\Desktop\anuvaad\Facebook LASER\resources\Input\src-ik-en.txt'
-p_indic = r'C:\Users\Vishal\Desktop\anuvaad\Facebook LASER\resources\Input\target-ik-hi.txt'
-
-source_enu = r'C:\Users\Vishal\Desktop\anuvaad\Facebook LASER\resources\Result\source-enu.txt'
-target_enu = r'C:\Users\Vishal\Desktop\anuvaad\Facebook LASER\resources\Result\target-enu.txt'
-
+directory_path = os.environ.get('DIRECTORY_PATH', r'C:\Users\Vishal\Desktop\anuvaad\Facebook LASER\resources\Input')
+res_suffix = 'response-'
 alignmentutils = AlignmentUtils()
 laser = Laser()
+
 
 class AlignmentService:
     def __init__(self):
         pass
+
+    def validate_input(self, data):
+        if 'source' not in data.keys():
+            return self.get_error("SOURCE_NOT_FOUND", "Details of the source not available")
+        else:
+            source = data["source"]
+            if 'filepath' not in source.keys():
+                return self.get_error("SOURCE_FILE_NOT_FOUND", "Details of the source file not available")
+            elif 'locale' not in source.keys():
+                return self.get_error("SOURCE_LOCALE_NOT_FOUND", "Details of the source locale not available")
+        if 'target' not in data.keys():
+            return self.get_error("TARGET_NOT_FOUND", "Details of the target not available")
+        else:
+            target = data["target"]
+            if 'filepath' not in target.keys():
+                return self.get_error("TARGET_FILE_NOT_FOUND", "Details of the target file not available")
+            elif 'locale' not in target.keys():
+                return self.get_error("TARGET_LOCALE_NOT_FOUND", "Details of the target locale not available")
+
+    def get_error(self, code, message):
+        return jsonify({"status": "ERROR", "code": code, "message": message})
 
     def build_index(self, source_embeddings, target_embeddings, source, target_corp):
         for sentence in source:
@@ -42,11 +61,10 @@ class AlignmentService:
         target_embeddings = []
         source = []
         target_corp = []
+        full_path = directory_path + '\\' + path
+        full_path_indic = directory_path + '\\' + path_indic
 
-        print(path)
-        print(path_indic)
-
-        alignmentutils.parse_csv(p, p_indic, source, target_corp)
+        alignmentutils.parse_csv(full_path, full_path_indic, source, target_corp)
         self.build_index(source_embeddings, target_embeddings, source, target_corp)
 
         for i, embeddings in enumerate(source_embeddings):
@@ -56,11 +74,22 @@ class AlignmentService:
             source_reformatted.append(source[key])
             target_refromatted.append(target_corp[embedded_dict[key][0]])
 
-        self.generate_output(source_reformatted, target_refromatted)
+        output_dict = self.generate_output(source_reformatted, target_refromatted, path, path_indic)
 
-        return jsonify({"Status": "Success", "File": "ABC"})
+        return jsonify({"status": "Success",
+                        "inputFiles": path + " | " + path_indic,
+                        "sourceOutput": output_dict["source"],
+                        "targetOutput": output_dict["target"]})
 
+    def generate_output(self, source_reformatted, target_refromatted, path, path_indic):
+        output_source = directory_path + '\\' + res_suffix + path
+        output_target = directory_path + '\\' + res_suffix + path_indic
+        alignmentutils.write_output(source_reformatted, output_source)
+        alignmentutils.write_output(target_refromatted, output_target)
+        return self.get_response_paths(output_source, output_target)
 
-    def generate_output(self, source_reformatted, target_refromatted):
-        alignmentutils.write_output(source_reformatted, source_enu)
-        alignmentutils.write_output(target_refromatted, target_enu)
+    def get_response_paths(self, output_src, output_trgt):
+        output_src = alignmentutils.upload_file_binary(output_src)
+        output_trgt = alignmentutils.upload_file_binary(output_trgt)
+        output_dict = {"source": output_src, "target": output_trgt}
+        return output_dict

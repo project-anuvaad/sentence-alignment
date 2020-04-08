@@ -1,0 +1,6 @@
+DIRECTORY_PATH = r'C:\Users\Vishal\Desktop\anuvaad\Facebook LASER\resources\Input'
+LASER_PATH = http://127.0.0.1:8050/vectorize
+TWO_FILES = True
+WORD_LENGTH = 200
+FILE_ENCODING = utf-16
+FILE_UPLOAD_URL = http://auth.anuvaad.org/upload

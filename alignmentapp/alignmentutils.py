@@ -1,5 +1,9 @@
 #!/bin/python
+import binascii
 import codecs
+import json
+import os
+
 import requests
 import numpy as np
 import csv
@@ -7,9 +11,10 @@ import random
 
 from scipy.spatial import distance
 
-two_files = True
-no_of_words = 200
-file_encoding = 'utf-16'
+two_files = os.environ.get('TWO_FILES', True)
+no_of_words = os.environ.get('WORD_LENGTH', 200)
+file_encoding = os.environ.get('FILE_ENCODING', 'utf-16')
+upload_url = os.environ.get('FILE_UPLOAD_URL', 'http://auth.anuvaad.org/upload')
 
 
 class AlignmentUtils:
@@ -54,3 +59,20 @@ class AlignmentUtils:
 
     def post_process_input(self, word_count, source):
         source[:] = [line for line in source if (len(line.split()) < word_count)]
+
+    def convert_file_to_binary(self, file_path):
+        x = ""
+        with open(file_path, 'rb') as f:
+            for chunk in iter(lambda: f.read(32), b''):
+                x += str(binascii.hexlify(chunk)).replace("b", "").replace("'", "")
+        b = bin(int(x, 16)).replace('b', '')
+        return b
+
+    def upload_file_binary(self, file):
+        data = open(file, 'rb')
+        response = requests.post(url = upload_url, data = data,
+                                 headers = {'Content-Type': 'application/x-www-form-urlencoded'})
+        data = json.loads(response.text)
+        for key, value in data.items():
+            if key == "data":
+                return value["filepath"]
