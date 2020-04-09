@@ -4,7 +4,7 @@ from alignmentapp.alignmentservice import AlignmentService
 
 app = Flask(__name__)
 
-@app.route('/align/files', methods = ["POST"])
+@app.route('/sentence-alignment/files/align', methods = ["POST"])
 def alignsentences():
     service = AlignmentService()
     data = request.get_json()
