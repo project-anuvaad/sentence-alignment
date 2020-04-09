@@ -5,8 +5,8 @@ import os
 import numpy as np
 from scipy.spatial import distance
 from flask import jsonify
-from .laser import Laser
-from alignmentapp.alignmentutils import AlignmentUtils
+from laser.laser import Laser
+from utilities.alignmentutils import AlignmentUtils
 
 directory_path = os.environ.get('DIRECTORY_PATH', r'C:\Users\Vishal\Desktop\anuvaad\Facebook LASER\resources\Input')
 res_suffix = 'response-'
@@ -61,8 +61,8 @@ class AlignmentService:
         target_embeddings = []
         source = []
         target_corp = []
-        full_path = directory_path + '\\' + path
-        full_path_indic = directory_path + '\\' + path_indic
+        full_path = directory_path + '/' + path
+        full_path_indic = directory_path + '/' + path_indic
 
         alignmentutils.parse_csv(full_path, full_path_indic, source, target_corp)
         self.build_index(source_embeddings, target_embeddings, source, target_corp)
@@ -82,8 +82,8 @@ class AlignmentService:
                         "targetOutput": output_dict["target"]})
 
     def generate_output(self, source_reformatted, target_refromatted, path, path_indic):
-        output_source = directory_path + '\\' + res_suffix + path
-        output_target = directory_path + '\\' + res_suffix + path_indic
+        output_source = directory_path + '/' + res_suffix + path
+        output_target = directory_path + '/' + res_suffix + path_indic
         alignmentutils.write_output(source_reformatted, output_source)
         alignmentutils.write_output(target_refromatted, output_target)
         return self.get_response_paths(output_source, output_target)

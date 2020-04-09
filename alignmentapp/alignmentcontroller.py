@@ -1,6 +1,6 @@
 #!/bin/python
 from flask import Flask, jsonify, request
-from alignmentapp.alignmentservice import AlignmentService
+from service.alignmentservice import AlignmentService
 
 app = Flask(__name__)
 
