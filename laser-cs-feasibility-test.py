@@ -12,9 +12,13 @@ from scipy.spatial import distance
 source = []
 target_corp = []
 
+processed_src = []
+processed_trgt = []
+
 two_files = True
-no_of_words = 200
-count_random = 3
+word_count_min = 0
+word_count_max_incl = 20
+count_random = 10
 file_encoding = 'utf-16'
 
 
@@ -38,8 +42,9 @@ def parse_csv(path_eng, path_indic):
                     target_corp.append(row[1])
 
 
-def post_process_input(word_count):
-    source[:] = [line for line in source if (len(line.split()) < word_count)]
+def post_process_input():
+    source[:] = [line for line in source if ((len(line.split()) <= word_count_max_incl) and (len(line.split()) > word_count_min))]
+    #target_corp[:] = [line for line in target_corp if (len(line.split()) < no_of_words)]
 
 
 def write_dict_to_csv(list, path):
@@ -57,11 +62,10 @@ def get_vect(query_in, lang, address='127.0.0.1:8050'):
 
 
 def build_index(source_embeddings, target_embeddings):
-    for sentence in source:
-        source_embeddings.append(get_vect(sentence, lang='en'))
-    for sentence in target_corp:
-        target_embeddings.append(get_vect(sentence, lang='hi'))
+    source_embeddings = [get_vect(sentence, lang='en') for sentence in source]
+    target_embeddings = [get_vect(sentence, lang='hi') for sentence in target_corp]
 
+    return source_embeddings, target_embeddings
 
 def cscalc(vector_one, vector_two):
     vector_one = np.squeeze(vector_one)
@@ -104,7 +108,10 @@ def process(path, path_indic):
     target_embeddings = []
 
     parse_csv(path, path_indic)
-    build_index(source_embeddings, target_embeddings)
+    post_process_input()
+    print("Processed source length: ", len(source))
+    print("Processed target length: ", len(target_corp))
+    source_embeddings, target_embeddings = build_index(source_embeddings, target_embeddings)
 
     for i, embeddings in enumerate(source_embeddings):
         embedded_dict[i] = get_target_sentence(target_embeddings, embeddings)
@@ -139,14 +146,14 @@ def generate_output(source_reformatted, target_refromatted, mismatch_output, sim
 
 
 
-p = r'C:\Users\Vishal\Desktop\anuvaad\Facebook LASER\resources\Input\src-ik-en.txt'
-p_indic = r'C:\Users\Vishal\Desktop\anuvaad\Facebook LASER\resources\Input\target-ik-hi.txt'
+p = r'C:\Users\Vishal\Desktop\anuvaad\Facebook LASER\resources\Input\actual\src-ik-en.txt'
+p_indic = r'C:\Users\Vishal\Desktop\anuvaad\Facebook LASER\resources\Input\actual\target-ik-hi.txt'
 
 out_path = r'C:\Users\Vishal\Desktop\anuvaad\Facebook LASER\resources\Result\mismatch.txt'
 similarity_path = r'C:\Users\Vishal\Desktop\anuvaad\Facebook LASER\resources\Result\similarity.txt'
 source_enu = r'C:\Users\Vishal\Desktop\anuvaad\Facebook LASER\resources\Result\source-enu.txt'
 target_enu = r'C:\Users\Vishal\Desktop\anuvaad\Facebook LASER\resources\Result\target-enu.txt'
 
-#process(p, p_indic)
+process(p, p_indic)
 
-print("Started.")
+print("Done.")

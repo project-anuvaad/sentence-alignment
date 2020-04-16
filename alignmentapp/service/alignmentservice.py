@@ -39,36 +39,41 @@ class AlignmentService:
     def get_error(self, code, message):
         return jsonify({"status": "ERROR", "code": code, "message": message})
 
-    def build_index(self, source_embeddings, target_embeddings, source, target_corp):
-        for sentence in source:
-            source_embeddings.append(laser.get_vect(sentence, lang='en'))
-        for sentence in target_corp:
-            target_embeddings.append(laser.get_vect(sentence, lang='hi'))
+    def build_index(self, source, target_corp):
+        source_embeddings = [laser.get_vect(sentence, lang='en') for sentence in source]
+        target_embeddings = [laser.get_vect(sentence, lang='hi') for sentence in target_corp]
 
-    def get_target_sentence(self, target_embeddings, source_embedding):
+        return source_embeddings, target_embeddings
+
+    def get_target_sentence(self, target_embeddings, source_embedding, src_sent):
         data = np.array(target_embeddings)
         data = data.reshape(data.shape[0], data.shape[2])
         distances = distance.cdist(np.array(source_embedding), data, "cosine")[0]
         min_index = np.argmin(distances)
         min_distance = 1 - distances[min_index]
-        return min_index, min_distance
+        cs = alignmentutils.get_cs_on_sen_cat(src_sent)
+        if min_distance >= cs:
+            return min_index, min_distance
 
     def process(self, path, path_indic):
         embedded_dict = {}
         source_reformatted = []
         target_refromatted = []
-        source_embeddings = []
-        target_embeddings = []
         source = []
         target_corp = []
+        lines_with_no_match = []
         full_path = directory_path + '/' + path
         full_path_indic = directory_path + '/' + path_indic
 
         alignmentutils.parse_csv(full_path, full_path_indic, source, target_corp)
-        self.build_index(source_embeddings, target_embeddings, source, target_corp)
+        source_embeddings, target_embeddings = self.build_index(source, target_corp)
 
-        for i, embeddings in enumerate(source_embeddings):
-            embedded_dict[i] = self.get_target_sentence(target_embeddings, embeddings)
+        for i, embedding in enumerate(source_embeddings):
+            trgt = self.get_target_sentence(target_embeddings, embedding, source[i])
+            if trgt is not None:
+                embedded_dict[i] = trgt
+            else:
+                lines_with_no_match.append(source[i])
 
         for key in embedded_dict:
             source_reformatted.append(source[key])

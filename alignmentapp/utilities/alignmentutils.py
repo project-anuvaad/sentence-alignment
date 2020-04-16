@@ -16,7 +16,6 @@ no_of_words = os.environ.get('WORD_LENGTH', 200)
 file_encoding = os.environ.get('FILE_ENCODING', 'utf-16')
 upload_url = os.environ.get('FILE_UPLOAD_URL', 'http://auth.anuvaad.org/upload')
 
-
 class AlignmentUtils:
 
     def __init__(self):
@@ -76,3 +75,16 @@ class AlignmentUtils:
         for key, value in data.items():
             if key == "data":
                 return value["filepath"]
+
+
+    def get_cs_on_sen_cat(self, sentence):
+        sen_len = len(sentence.split())
+        if 0 < sen_len <= 20:
+            #SMALL
+            return 0.7
+        elif 25 < sen_len <= 60:
+            #MEDIUM
+            return 0.75
+        else:
+            #LARGE
+            return 0.8
