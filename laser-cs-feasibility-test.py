@@ -16,8 +16,8 @@ processed_src = []
 processed_trgt = []
 
 two_files = True
-word_count_min = 0
-word_count_max_incl = 20
+word_count_min = 20
+word_count_max_incl = 500
 count_random = 10
 file_encoding = 'utf-16'
 
@@ -63,7 +63,9 @@ def get_vect(query_in, lang, address='127.0.0.1:8050'):
 
 def build_index(source_embeddings, target_embeddings):
     source_embeddings = [get_vect(sentence, lang='en') for sentence in source]
-    target_embeddings = [get_vect(sentence, lang='hi') for sentence in target_corp]
+    for i, sentence in enumerate(target_corp):
+        target_embeddings.append(get_vect(sentence, lang='hi'))
+        print(i)
 
     return source_embeddings, target_embeddings
 
@@ -146,8 +148,8 @@ def generate_output(source_reformatted, target_refromatted, mismatch_output, sim
 
 
 
-p = r'C:\Users\Vishal\Desktop\anuvaad\Facebook LASER\resources\Input\actual\src-ik-en.txt'
-p_indic = r'C:\Users\Vishal\Desktop\anuvaad\Facebook LASER\resources\Input\actual\target-ik-hi.txt'
+p = r'C:\Users\Vishal\Desktop\anuvaad\Facebook LASER\resources\Input\length-wise\src-ik-en.txt'
+p_indic = r'C:\Users\Vishal\Desktop\anuvaad\Facebook LASER\resources\Input\length-wise\target-ik-hi.txt'
 
 out_path = r'C:\Users\Vishal\Desktop\anuvaad\Facebook LASER\resources\Result\mismatch.txt'
 similarity_path = r'C:\Users\Vishal\Desktop\anuvaad\Facebook LASER\resources\Result\similarity.txt'

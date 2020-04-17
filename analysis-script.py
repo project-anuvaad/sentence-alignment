@@ -70,7 +70,7 @@ def calc_cs_wise_report(sim_dict, mis_dict):
 
 
 def process():
-    folder = '30-35'
+    folder = 'large-21-500'
     sim_path = r'C:\Users\Vishal\Desktop\anuvaad\Facebook LASER\resources\Result' + '\\' + folder + '\\' + 'similarity.txt'
     mis_path = r'C:\Users\Vishal\Desktop\anuvaad\Facebook LASER\resources\Result' + '\\' + folder + '\\' + 'mismatch.txt'
     result_path = r'C:\Users\Vishal\Desktop\anuvaad\Facebook LASER\resources\Result' + '\\' + folder + '\\' + 'analysis.txt'

@@ -79,12 +79,12 @@ class AlignmentUtils:
 
     def get_cs_on_sen_cat(self, sentence):
         sen_len = len(sentence.split())
-        if 0 < sen_len <= 20:
+        if 0 < sen_len <= 10:
             #SMALL
             return 0.7
-        elif 25 < sen_len <= 60:
+        elif 10 < sen_len <= 20:
             #MEDIUM
             return 0.75
         else:
             #LARGE
-            return 0.8
+            return 0.75
