@@ -21,7 +21,7 @@ class AlignmentUtils:
     def __init__(self):
         pass
 
-    def parse_csv(self, path_eng, path_indic, source, target_corp):
+    def parse_input_file(self, path_eng, path_indic, source, target_corp):
         if two_files:
             with codecs.open(path_eng, 'r', file_encoding) as txt_file:
                 for row in txt_file:
@@ -81,10 +81,10 @@ class AlignmentUtils:
         sen_len = len(sentence.split())
         if 0 < sen_len <= 10:
             #SMALL
-            return 0.7
+            return 0.7, 0.8
         elif 10 < sen_len <= 20:
             #MEDIUM
-            return 0.75
+            return 0.75, 0.8
         else:
             #LARGE
-            return 0.75
+            return 0.75, 0.8
