@@ -12,7 +12,7 @@ directory_path = os.environ.get('DIRECTORY_PATH', r'C:\Users\Vishal\Desktop\anuv
 res_suffix = 'response-'
 man_suffix = 'manual-'
 nomatch_suffix = 'nomatch-'
-file_path_delimiter = os.environ.get('FILE_PATH_DELIMITER', '/')
+file_path_delimiter = os.environ.get('FILE_PATH_DELIMITER', '\\')
 alignmentutils = AlignmentUtils()
 laser = Laser()
 
@@ -43,9 +43,7 @@ class AlignmentService:
         return jsonify({"status": "ERROR", "code": code, "message": message})
 
     def build_index(self, source, target_corp):
-        source_embeddings = [laser.get_vect(sentence, lang='en') for sentence in source]
-        target_embeddings = [laser.get_vect(sentence, lang='hi') for sentence in target_corp]
-
+        source_embeddings, target_embeddings = laser.vecotrize_sentences(source, target_corp)
         return source_embeddings, target_embeddings
 
     def get_target_sentence(self, target_embeddings, source_embedding, src_sent):
@@ -76,7 +74,7 @@ class AlignmentService:
         source_embeddings, target_embeddings = self.build_index(source, target_corp)
         for i, embedding in enumerate(source_embeddings):
             trgt = self.get_target_sentence(target_embeddings, embedding, source[i])
-            print(trgt)
+            #print(trgt)
             if trgt is not None:
                 if trgt[2] is "MATCH":
                     match_dict[i] = trgt[0], trgt[1]
