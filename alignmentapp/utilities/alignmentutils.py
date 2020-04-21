@@ -7,9 +7,7 @@ import os
 import requests
 import numpy as np
 import csv
-import random
-
-from scipy.spatial import distance
+import time
 
 two_files = os.environ.get('TWO_FILES', True)
 no_of_words = os.environ.get('WORD_LENGTH', 200)
@@ -21,7 +19,9 @@ class AlignmentUtils:
     def __init__(self):
         pass
 
-    def parse_input_file(self, path_eng, path_indic, source, target_corp):
+    def parse_input_file(self, path_eng, path_indic):
+        source = []
+        target_corp = []
         if two_files:
             with codecs.open(path_eng, 'r', file_encoding) as txt_file:
                 for row in txt_file:
@@ -39,6 +39,8 @@ class AlignmentUtils:
                     if len(row) != 0:
                         source.append(row[0])
                         target_corp.append(row[1])
+
+        return source, target_corp
 
 
     def write_output(self, list, path):
@@ -88,3 +90,6 @@ class AlignmentUtils:
         else:
             #LARGE
             return 0.75, 0.8
+
+    def generate_job_id(self):
+        return str(time.time()).replace('.', '')

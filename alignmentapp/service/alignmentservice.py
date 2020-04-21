@@ -3,23 +3,33 @@ import codecs
 import os
 
 import numpy as np
+import datetime as dt
 from scipy.spatial import distance
 from flask import jsonify
 from laser.laser import Laser
 from utilities.alignmentutils import AlignmentUtils
+from repository.alignmentrepository import AlignmentRepository
+from kafka.producer import Producer
+from kafka.consumer import Consumer
 
-directory_path = os.environ.get('DIRECTORY_PATH', r'C:\Users\Vishal\Desktop\anuvaad\Facebook LASER\resources\Input')
+directory_path = os.environ.get('DIRECTORY_PATH', r'C:\Users\Vishal\Desktop\anuvaad\Facebook LASER\resources\Input\length-wise')
 res_suffix = 'response-'
 man_suffix = 'manual-'
 nomatch_suffix = 'nomatch-'
 file_path_delimiter = os.environ.get('FILE_PATH_DELIMITER', '\\')
 alignmentutils = AlignmentUtils()
+repo = AlignmentRepository()
 laser = Laser()
-
+producer = Producer()
+consumer = Consumer()
 
 class AlignmentService:
     def __init__(self):
         pass
+
+    def register_job(self, object):
+        repo.create_job(object)
+        producer.push_to_queue(object)
 
     def validate_input(self, data):
         if 'source' not in data.keys():
@@ -58,9 +68,7 @@ class AlignmentService:
         elif min_cs <= min_distance < max_cs:
             return min_index, min_distance, "MANUAL"
 
-    def process(self, path, path_indic):
-        source = []
-        target_corp = []
+    def process(self, object):
         match_dict = {}
         manual_dict = {}
         source_reformatted = []
@@ -68,13 +76,17 @@ class AlignmentService:
         manual_src = []
         manual_trgt = []
         lines_with_no_match = []
+        path = object["source"]
+        path_indic = object["target"]
         full_path = directory_path + file_path_delimiter + path
         full_path_indic = directory_path + file_path_delimiter + path_indic
-        alignmentutils.parse_input_file(full_path, full_path_indic, source, target_corp)
+        object["status"] = "INPROGRESS"
+        repo.update_job(object, object["jobID"])
+        source, target_corp = alignmentutils.parse_input_file(full_path, full_path_indic)
+        print(str(dt.datetime.now()) + " : Input Parsed!")
         source_embeddings, target_embeddings = self.build_index(source, target_corp)
         for i, embedding in enumerate(source_embeddings):
             trgt = self.get_target_sentence(target_embeddings, embedding, source[i])
-            #print(trgt)
             if trgt is not None:
                 if trgt[2] is "MATCH":
                     match_dict[i] = trgt[0], trgt[1]
@@ -85,13 +97,17 @@ class AlignmentService:
         for key in match_dict:
             source_reformatted.append(source[key])
             target_refromatted.append(target_corp[match_dict[key][0]])
+        print(str(dt.datetime.now()) + " : Match Bucket Filled...")
         if len(manual_dict.keys()) > 0:
             for key in manual_dict:
                 manual_src.append(source[key])
                 manual_trgt.append(target_corp[manual_dict[key][0]])
+        print(str(dt.datetime.now()) + " : Manual Bucket Filled...")
+        print(str(dt.datetime.now()) + " : No Match Bucket Filled...")
         output_dict = self.generate_output(source_reformatted, target_refromatted, manual_src, manual_trgt,
                                            lines_with_no_match, path, path_indic)
-        return self.build_final_response(path, path_indic, output_dict)
+        result = self.build_final_response(path, path_indic, output_dict, object["jobID"])
+        repo.update_job(result, object["jobID"])
 
     def generate_output(self, source_reformatted, target_refromatted, manual_src, manual_trgt, nomatch_src, path, path_indic):
         output_source = directory_path + file_path_delimiter + res_suffix + path
@@ -114,18 +130,13 @@ class AlignmentService:
         output_manual_src = alignmentutils.upload_file_binary(output_manual_src)
         output_manual_trgt = alignmentutils.upload_file_binary(output_manual_trgt)
         output_nomatch = alignmentutils.upload_file_binary(output_nomatch)
-
-        output_dict = {"source": output_src,
-                       "target": output_trgt,
-                       "manual_src": output_manual_src,
-                       "manual_trgt": output_manual_trgt,
-                       "nomatch": output_nomatch
-                       }
-
+        output_dict = {"source": output_src, "target": output_trgt, "manual_src": output_manual_src,
+                       "manual_trgt": output_manual_trgt, "nomatch": output_nomatch }
         return output_dict
 
-    def build_final_response(self, source, target, output):
-        result = {"status": "SUCCESS",
+    def build_final_response(self, source, target, output, job_id):
+        result = {"status": "COMPLETED",
+                  "jobID": job_id,
                   "input": {
                       "source": source,
                       "target": target
@@ -145,3 +156,8 @@ class AlignmentService:
                   }}
 
         return jsonify(result)
+
+    def search_jobs(self, job_id):
+        return repo.search_job(job_id)
+
+
