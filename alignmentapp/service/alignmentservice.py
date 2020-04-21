@@ -11,7 +11,7 @@ from utilities.alignmentutils import AlignmentUtils
 from repository.alignmentrepository import AlignmentRepository
 from kafkawrapper.producer import Producer
 
-directory_path = os.environ.get('DIRECTORY_PATH', r'C:\Users\Vishal\Desktop\anuvaad\Facebook LASER\resources\Input')
+directory_path = os.environ.get('DIRECTORY_PATH', r'C:\Users\Vishal\Desktop\anuvaad\Facebook LASER\resources\Input\length-wise')
 res_suffix = 'response-'
 man_suffix = 'manual-'
 nomatch_suffix = 'nomatch-'
