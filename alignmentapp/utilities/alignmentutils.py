@@ -3,6 +3,7 @@ import binascii
 import codecs
 import json
 import os
+import datetime as dt
 
 import requests
 import numpy as np
@@ -22,6 +23,7 @@ class AlignmentUtils:
     def parse_input_file(self, path_eng, path_indic):
         source = []
         target_corp = []
+        print(str(dt.datetime.now()) + " : Parsing Input Files.....")
         if two_files:
             with codecs.open(path_eng, 'r', file_encoding) as txt_file:
                 for row in txt_file:
@@ -39,7 +41,7 @@ class AlignmentUtils:
                     if len(row) != 0:
                         source.append(row[0])
                         target_corp.append(row[1])
-
+        print(str(dt.datetime.now()) + " : Done.")
         return source, target_corp
 
 

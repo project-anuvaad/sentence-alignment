@@ -9,10 +9,9 @@ from flask import jsonify
 from laser.laser import Laser
 from utilities.alignmentutils import AlignmentUtils
 from repository.alignmentrepository import AlignmentRepository
-from kafka.producer import Producer
-from kafka.consumer import Consumer
+from kafkawrapper.producer import Producer
 
-directory_path = os.environ.get('DIRECTORY_PATH', r'C:\Users\Vishal\Desktop\anuvaad\Facebook LASER\resources\Input\length-wise')
+directory_path = os.environ.get('DIRECTORY_PATH', r'C:\Users\Vishal\Desktop\anuvaad\Facebook LASER\resources\Input')
 res_suffix = 'response-'
 man_suffix = 'manual-'
 nomatch_suffix = 'nomatch-'
@@ -21,7 +20,6 @@ alignmentutils = AlignmentUtils()
 repo = AlignmentRepository()
 laser = Laser()
 producer = Producer()
-consumer = Consumer()
 
 class AlignmentService:
     def __init__(self):
@@ -29,7 +27,8 @@ class AlignmentService:
 
     def register_job(self, object):
         repo.create_job(object)
-        producer.push_to_queue(object)
+        print(str(dt.datetime.now()) + " : JOB ID: ", object["jobID"])
+        #producer.push_to_queue(object)
 
     def validate_input(self, data):
         if 'source' not in data.keys():
@@ -81,10 +80,9 @@ class AlignmentService:
         full_path = directory_path + file_path_delimiter + path
         full_path_indic = directory_path + file_path_delimiter + path_indic
         object["status"] = "INPROGRESS"
-        object["start_time"] = str(dt.datetime.now())
+        object["startTime"] = str(dt.datetime.now())
         repo.update_job(object, object["jobID"])
         source, target_corp = alignmentutils.parse_input_file(full_path, full_path_indic)
-        print(str(dt.datetime.now()) + " : Input Parsed!")
         source_embeddings, target_embeddings = self.build_index(source, target_corp)
         for i, embedding in enumerate(source_embeddings):
             trgt = self.get_target_sentence(target_embeddings, embedding, source[i])
@@ -109,7 +107,7 @@ class AlignmentService:
                                            lines_with_no_match, path, path_indic)
         result = self.build_final_response(path, path_indic, output_dict, object)
         repo.update_job(result, object["jobID"])
-        return result
+        return jsonify(result)
 
     def generate_output(self, source_reformatted, target_refromatted, manual_src, manual_trgt, nomatch_src, path, path_indic):
         output_source = directory_path + file_path_delimiter + res_suffix + path
@@ -159,7 +157,7 @@ class AlignmentService:
                       }
                   }}
 
-        return jsonify(result)
+        return result
 
     def search_jobs(self, job_id):
         return repo.search_job(job_id)

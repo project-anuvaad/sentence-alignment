@@ -27,18 +27,20 @@ class AlignmentRepository:
 
     def create_job(self, object):
         col = self.instantiate()
-        id = col.insert_one(object)
-        print("Inserted at: ", id)
+        col.insert_one(object)
 
     def update_job(self, object, job_id):
         col = self.instantiate()
         query = {"jobID" : job_id}
         new = {"$set": object}
         col.update_one(query, new)
-        print("Updated!")
 
     def search_job(self, job_id):
         col = self.instantiate()
         query = {"jobID" : job_id}
-        result = col.find(query)
+        res = col.find(query, {'_id': False})
+        result = []
+        for record in res:
+            print(record)
+            result.append(record)
         return result

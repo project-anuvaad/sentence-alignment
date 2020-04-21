@@ -19,8 +19,9 @@ def alignsentences():
     target_file = data["target"]["filepath"]
     print(str(dt.datetime.now()) + " : Alignment process Started......")
     job_id = util.generate_job_id()
-    object = {"source": source_file, "target": target_file, "jobId": job_id, "status": "START"}
-    response = service.process(object)
+    obj = {"source": source_file, "target": target_file, "jobID": job_id, "status": "START"}
+    service.register_job(obj)
+    response = service.process(obj)
     print(str(dt.datetime.now()) + " : Aligned Successfully (" + source_file + " | " + target_file + ")")
     return response
 
@@ -40,7 +41,7 @@ def createalignmentjob():
     return jsonify(response)
 
 @app.route('/sentence-alignment/alignment/jobs/get/<job_id>', methods=["GET"])
-def createalignmentjob(job_id):
+def searchjobs(job_id):
     service = AlignmentService()
     response = service.search_jobs(job_id)
     return jsonify(response)
