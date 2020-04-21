@@ -10,6 +10,7 @@ app = Flask(__name__)
 @app.route('/sentence-alignment/files/align', methods=["POST"])
 def alignsentences():
     service = AlignmentService()
+    util = AlignmentUtils()
     data = request.get_json()
     error = service.validate_input(data)
     if error is not None:
@@ -17,7 +18,9 @@ def alignsentences():
     source_file = data["source"]["filepath"]
     target_file = data["target"]["filepath"]
     print(str(dt.datetime.now()) + " : Alignment process Started......")
-    response = service.process(source_file, target_file)
+    job_id = util.generate_job_id()
+    object = {"source": source_file, "target": target_file, "jobId": job_id, "status": "START"}
+    response = service.process(object)
     print(str(dt.datetime.now()) + " : Aligned Successfully (" + source_file + " | " + target_file + ")")
     return response
 

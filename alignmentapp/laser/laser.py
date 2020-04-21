@@ -8,7 +8,7 @@ import multiprocessing
 import datetime as dt
 
 laser_url = os.environ.get('LASER_PATH', 'http://127.0.0.1:8050/vectorize')
-no_of_processes = os.environ.get('NO_OF_PROCESSES', 4)
+no_of_processes = os.environ.get('NO_OF_PROCESSES', 2)
 
 class Laser:
 

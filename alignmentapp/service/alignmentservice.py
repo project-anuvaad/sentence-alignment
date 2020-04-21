@@ -81,6 +81,7 @@ class AlignmentService:
         full_path = directory_path + file_path_delimiter + path
         full_path_indic = directory_path + file_path_delimiter + path_indic
         object["status"] = "INPROGRESS"
+        object["start_time"] = str(dt.datetime.now())
         repo.update_job(object, object["jobID"])
         source, target_corp = alignmentutils.parse_input_file(full_path, full_path_indic)
         print(str(dt.datetime.now()) + " : Input Parsed!")
@@ -106,8 +107,9 @@ class AlignmentService:
         print(str(dt.datetime.now()) + " : No Match Bucket Filled...")
         output_dict = self.generate_output(source_reformatted, target_refromatted, manual_src, manual_trgt,
                                            lines_with_no_match, path, path_indic)
-        result = self.build_final_response(path, path_indic, output_dict, object["jobID"])
+        result = self.build_final_response(path, path_indic, output_dict, object)
         repo.update_job(result, object["jobID"])
+        return result
 
     def generate_output(self, source_reformatted, target_refromatted, manual_src, manual_trgt, nomatch_src, path, path_indic):
         output_source = directory_path + file_path_delimiter + res_suffix + path
@@ -134,9 +136,11 @@ class AlignmentService:
                        "manual_trgt": output_manual_trgt, "nomatch": output_nomatch }
         return output_dict
 
-    def build_final_response(self, source, target, output, job_id):
+    def build_final_response(self, source, target, output, object):
         result = {"status": "COMPLETED",
-                  "jobID": job_id,
+                  "jobID": object["jobID"],
+                  "startTime": object["start_time"],
+                  "endTime": str(dt.datetime.now()),
                   "input": {
                       "source": source,
                       "target": target
