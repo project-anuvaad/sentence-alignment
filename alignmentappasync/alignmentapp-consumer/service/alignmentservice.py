@@ -26,33 +26,6 @@ class AlignmentService:
     def __init__(self):
         pass
 
-    def register_job(self, object_in):
-        repo.create_job(object_in)
-        print(str(dt.datetime.now()) + " : JOB ID: ", object_in["jobID"])
-        del object_in['_id']
-        producer.push_to_queue(object_in)
-
-    def validate_input(self, data):
-        if 'source' not in data.keys():
-            return self.get_error("SOURCE_NOT_FOUND", "Details of the source not available")
-        else:
-            source = data["source"]
-            if 'filepath' not in source.keys():
-                return self.get_error("SOURCE_FILE_NOT_FOUND", "Details of the source file not available")
-            elif 'locale' not in source.keys():
-                return self.get_error("SOURCE_LOCALE_NOT_FOUND", "Details of the source locale not available")
-        if 'target' not in data.keys():
-            return self.get_error("TARGET_NOT_FOUND", "Details of the target not available")
-        else:
-            target = data["target"]
-            if 'filepath' not in target.keys():
-                return self.get_error("TARGET_FILE_NOT_FOUND", "Details of the target file not available")
-            elif 'locale' not in target.keys():
-                return self.get_error("TARGET_LOCALE_NOT_FOUND", "Details of the target locale not available")
-
-    def get_error(self, code, message):
-        return jsonify({"status": "ERROR", "code": code, "message": message})
-
     def build_index(self, source, target_corp):
         source_embeddings, target_embeddings = laser.vecotrize_sentences(source, target_corp)
         return source_embeddings, target_embeddings
@@ -109,7 +82,6 @@ class AlignmentService:
                                            lines_with_no_match, path, path_indic)
         result = self.build_final_response(path, path_indic, output_dict, object_in)
         repo.update_job(result, object_in["jobID"])
-        return jsonify(result)
 
     def generate_output(self, source_reformatted, target_refromatted, manual_src, manual_trgt, nomatch_src, path, path_indic):
         output_source = directory_path + file_path_delimiter + res_suffix + path
@@ -160,8 +132,5 @@ class AlignmentService:
                   }}
 
         return result
-
-    def search_jobs(self, job_id):
-        return repo.search_job(job_id)
 
 

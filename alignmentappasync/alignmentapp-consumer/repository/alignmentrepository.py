@@ -25,22 +25,8 @@ class AlignmentRepository:
         col = db[mongo_alignment_col]
         return col
 
-    def create_job(self, object_in):
-        col = self.instantiate()
-        col.insert_one(object_in)
-
     def update_job(self, object_in, job_id):
         col = self.instantiate()
         query = {"jobID" : job_id}
         new = {"$set": object_in}
         col.update_one(query, new)
-
-    def search_job(self, job_id):
-        col = self.instantiate()
-        query = {"jobID" : job_id}
-        res = col.find(query, {'_id': False})
-        result = []
-        for record in res:
-            print(record)
-            result.append(record)
-        return result

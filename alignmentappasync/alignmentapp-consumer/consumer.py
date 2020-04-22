@@ -3,7 +3,7 @@ from json import loads
 from kafka import KafkaConsumer
 import os
 import datetime as dt
-#from service.alignmentservice import AlignmentService
+from service.alignmentservice import AlignmentService
 
 cluster_details = os.environ.get('KAFKA_CLUSTER_DETAILS', 'localhost:9092')
 align_job_topic = os.environ.get('ALIGN_JOB_TOPIC', 'laser-align-job-register')
@@ -20,10 +20,10 @@ class Consumer:
                          value_deserializer = lambda x: loads(x.decode('utf-8')))
     consumer.subscribe(align_job_topic)
     print(str(dt.datetime.now()) + " : Consuming from the Kafka Queue......")
-    #service = AlignmentService()
+    service = AlignmentService()
     for msg in consumer:
         data = msg.value
         print(data)
-        #service.process(data)
+        service.process(data)
 
 

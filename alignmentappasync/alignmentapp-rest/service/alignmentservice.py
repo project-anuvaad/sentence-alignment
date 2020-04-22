@@ -26,11 +26,12 @@ class AlignmentService:
     def __init__(self):
         pass
 
-    def register_job(self, object_in):
+    def register_job(self, object_in, isasync):
         repo.create_job(object_in)
         print(str(dt.datetime.now()) + " : JOB ID: ", object_in["jobID"])
-        del object_in['_id']
-        producer.push_to_queue(object_in)
+        if isasync:
+            del object_in['_id']
+            producer.push_to_queue(object_in)
 
     def validate_input(self, data):
         if 'source' not in data.keys():
