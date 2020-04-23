@@ -1,4 +1,5 @@
 import json
+import traceback
 from json import loads
 
 from kafka import KafkaConsumer
@@ -14,31 +15,35 @@ align_job_consumer_grp = os.environ.get('ALIGN_JOB_CONSUMER_GRP', 'laser-align-j
 def instantiate():
     consumer = KafkaConsumer(align_job_topic,
                              bootstrap_servers=[cluster_details],
-                             group_id=align_job_consumer_grp,
                              api_version=(1, 0, 0),
+                             group_id=align_job_consumer_grp,
                              auto_offset_reset='earliest',
                              enable_auto_commit=True,
                              value_deserializer=lambda x: handle_json(x))
-    consumer.poll(10)
     return consumer
 
 
 def consume():
     consumer = instantiate()
-    print(str(dt.datetime.now()) + " : Consuming from the Kafka Queue......")
     service = AlignmentService()
-    for msg in consumer:
-        print(msg)
-        data = msg.value
-        service.process(data)
-
+    while True:
+        try:
+            for msg in consumer:
+                print(str(dt.datetime.now()) + " : Consuming from the Kafka Queue......")
+                data = msg.value
+                print(data)
+                service.process(data)
+        except Exception as e:
+            print(str(dt.datetime.now()) + " : Exception while consuming: " + str(e))
+            traceback.print_exc()
 
 def handle_json(x):
+    print("Decoding: ", x)
     try:
         return json.loads(x.decode('utf-8'))
     except Exception as e:
-        print("Exception: ", e)
+        print(str(dt.datetime.now()) + " : Exception while deserialising: " + str(e))
+        traceback.print_exc()
         return {}
-
 
 consume()
