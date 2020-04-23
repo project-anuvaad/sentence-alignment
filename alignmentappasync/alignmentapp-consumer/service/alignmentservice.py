@@ -9,7 +9,6 @@ from flask import jsonify
 from laser.laser import Laser
 from utilities.alignmentutils import AlignmentUtils
 from repository.alignmentrepository import AlignmentRepository
-from kafkawrapper.producer import Producer
 
 directory_path = os.environ.get('SA_DIRECTORY_PATH', r'C:\Users\Vishal\Desktop\anuvaad\Facebook LASER\resources\Input')
 res_suffix = 'response-'
@@ -19,7 +18,6 @@ file_path_delimiter = os.environ.get('FILE_PATH_DELIMITER', '\\')
 alignmentutils = AlignmentUtils()
 repo = AlignmentRepository()
 laser = Laser()
-producer = Producer()
 
 
 class AlignmentService:

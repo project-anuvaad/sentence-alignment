@@ -20,31 +20,15 @@ def alignsentences():
     print(str(dt.datetime.now()) + " : Alignment process Started......")
     job_id = util.generate_job_id()
     obj = {"source": source_file, "target": target_file, "jobID": job_id, "status": "START"}
-    service.register_job(obj)
-    response = service.process(obj)
-    print(str(dt.datetime.now()) + " : Aligned Successfully (" + source_file + " | " + target_file + ")")
-    return response
+    response = {}
+    try:
+        service.register_job(obj)
+        response = service.process(obj)
+        print(str(dt.datetime.now()) + " : Aligned Successfully (" + source_file + " | " + target_file + ")")
+    except Exception as e:
+        print("An error has occured while aligning: ", e)
 
-@app.route('/sentence-alignment/files/align/async', methods=["POST"])
-def createalignmentjob():
-    service = AlignmentService()
-    util = AlignmentUtils()
-    data = request.get_json()
-    error = service.validate_input(data)
-    if error is not None:
-        return error
-    source_file = data["source"]["filepath"]
-    target_file = data["target"]["filepath"]
-    job_id = util.generate_job_id()
-    response = {"source": source_file, "target": target_file, "jobID": job_id, "status": "START"}
-    service.register_job(response)
     return response
-
-@app.route('/sentence-alignment/alignment/jobs/get/<job_id>', methods=["GET"])
-def searchjobs(job_id):
-    service = AlignmentService()
-    response = service.search_jobs(job_id)
-    return jsonify(response)
 
 
 if __name__ == '__main__':
