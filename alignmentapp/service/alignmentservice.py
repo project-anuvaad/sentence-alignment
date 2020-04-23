@@ -9,6 +9,8 @@ from flask import jsonify
 from laser.laser import Laser
 from utilities.alignmentutils import AlignmentUtils
 from repository.alignmentrepository import AlignmentRepository
+from kafkawrapper.producer import Producer
+from kafkawrapper.consumer import Consumer
 
 
 directory_path = os.environ.get('SA_DIRECTORY_PATH', r'C:\Users\Vishal\Desktop\anuvaad\Facebook LASER\resources\Input')
@@ -16,40 +18,27 @@ res_suffix = 'response-'
 man_suffix = 'manual-'
 nomatch_suffix = 'nomatch-'
 file_path_delimiter = os.environ.get('FILE_PATH_DELIMITER', '\\')
+align_job_topic = os.environ.get('ALIGN_JOB_TOPIC', 'laser-align-job-register')
 alignmentutils = AlignmentUtils()
 repo = AlignmentRepository()
 laser = Laser()
+producer = Producer()
+consumer = Consumer()
 
 
 class AlignmentService:
     def __init__(self):
         pass
 
-    def register_job(self, object_in):
+    def register_job(self, object_in, isasync):
         repo.create_job(object_in)
         print(str(dt.datetime.now()) + " : JOB ID: ", object_in["jobID"])
-
-
-    def validate_input(self, data):
-        if 'source' not in data.keys():
-            return self.get_error("SOURCE_NOT_FOUND", "Details of the source not available")
-        else:
-            source = data["source"]
-            if 'filepath' not in source.keys():
-                return self.get_error("SOURCE_FILE_NOT_FOUND", "Details of the source file not available")
-            elif 'locale' not in source.keys():
-                return self.get_error("SOURCE_LOCALE_NOT_FOUND", "Details of the source locale not available")
-        if 'target' not in data.keys():
-            return self.get_error("TARGET_NOT_FOUND", "Details of the target not available")
-        else:
-            target = data["target"]
-            if 'filepath' not in target.keys():
-                return self.get_error("TARGET_FILE_NOT_FOUND", "Details of the target file not available")
-            elif 'locale' not in target.keys():
-                return self.get_error("TARGET_LOCALE_NOT_FOUND", "Details of the target locale not available")
-
-    def get_error(self, code, message):
-        return jsonify({"status": "ERROR", "code": code, "message": message})
+        if isasync:
+            del object_in['_id']
+            print(str(dt.datetime.now()) + " : Pushing to the Queue....")
+            prod = producer.get_producer()
+            prod.send(align_job_topic, value=object_in)
+            self.process_async()
 
     def build_index(self, source, target_corp):
         source_embeddings, target_embeddings = laser.vecotrize_sentences(source, target_corp)
@@ -66,6 +55,14 @@ class AlignmentService:
             return min_index, min_distance, "MATCH"
         elif min_cs <= min_distance < max_cs:
             return min_index, min_distance, "MANUAL"
+
+    def process_async(self):
+        con = consumer.get_consumer()
+        for record in con:
+            print(str(dt.datetime.now()) + " : Data Received on Topic = ", record.topic)
+            data = record.value
+            print(data)
+            self.process(data)
 
     def process(self, object_in):
         match_dict = {}

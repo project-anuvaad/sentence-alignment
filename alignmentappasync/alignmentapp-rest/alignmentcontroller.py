@@ -19,7 +19,7 @@ def createalignmentjob():
     target_file = data["target"]["filepath"]
     job_id = util.generate_job_id()
     response = {"source": source_file, "target": target_file, "jobID": job_id, "status": "START"}
-    service.register_job(response, True)
+    service.register_job(response)
     return response
 
 @app.route('/sentence-alignment/alignment/jobs/get/<job_id>', methods=["GET"])

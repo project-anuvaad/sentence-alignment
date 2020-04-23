@@ -13,12 +13,13 @@ align_job_consumer_grp = os.environ.get('ALIGN_JOB_CONSUMER_GRP', 'laser-align-j
 
 def instantiate():
     consumer = KafkaConsumer(align_job_topic,
-                             bootstrap_servers= cluster_details,
+                             bootstrap_servers=[cluster_details],
                              group_id=align_job_consumer_grp,
-                             api_version=(0, 11, 5),
+                             api_version=(1, 0, 0),
                              auto_offset_reset='earliest',
                              enable_auto_commit=True,
                              value_deserializer=lambda x: handle_json(x))
+    consumer.poll(10)
     return consumer
 
 
@@ -27,8 +28,8 @@ def consume():
     print(str(dt.datetime.now()) + " : Consuming from the Kafka Queue......")
     service = AlignmentService()
     for msg in consumer:
+        print(msg)
         data = msg.value
-        print(data)
         service.process(data)
 
 
