@@ -1,6 +1,7 @@
 #!/bin/python
 import codecs
 import os
+import traceback
 
 import numpy as np
 import datetime as dt
@@ -41,13 +42,10 @@ class AlignmentService:
             return min_index, min_distance, "MANUAL"
 
     def process(self, object_in):
-        match_dict = {}
-        manual_dict = {}
         source_reformatted = []
         target_refromatted = []
         manual_src = []
         manual_trgt = []
-        lines_with_no_match = []
         path = object_in["source"]
         path_indic = object_in["target"]
         full_path = directory_path + file_path_delimiter + path
@@ -55,31 +53,91 @@ class AlignmentService:
         object_in["status"] = "INPROGRESS"
         object_in["startTime"] = str(dt.datetime.now())
         repo.update_job(object_in, object_in["jobID"])
-        source, target_corp = alignmentutils.parse_input_file(full_path, full_path_indic)
-        source_embeddings, target_embeddings = self.build_index(source, target_corp)
-        for i, embedding in enumerate(source_embeddings):
-            trgt = self.get_target_sentence(target_embeddings, embedding, source[i])
-            if trgt is not None:
-                if trgt[2] is "MATCH":
-                    match_dict[i] = trgt[0], trgt[1]
-                else:
-                    manual_dict[i] = trgt[0], trgt[1]
-            else:
-                lines_with_no_match.append(source[i])
-        for key in match_dict:
-            source_reformatted.append(source[key])
-            target_refromatted.append(target_corp[match_dict[key][0]])
-        print(str(dt.datetime.now()) + " : Match Bucket Filled...")
-        if len(manual_dict.keys()) > 0:
-            for key in manual_dict:
-                manual_src.append(source[key])
-                manual_trgt.append(target_corp[manual_dict[key][0]])
-        print(str(dt.datetime.now()) + " : Manual Bucket Filled...")
-        print(str(dt.datetime.now()) + " : No Match Bucket Filled...")
-        output_dict = self.generate_output(source_reformatted, target_refromatted, manual_src, manual_trgt,
+        parsed_in = self.parse_in(full_path, full_path_indic, object_in)
+        if parsed_in is not None:
+            source = parsed_in[0]
+            target_corp = parsed_in[1]
+        else:
+            return {}
+        embeddings = self.build_embeddings(source, target_corp, object_in)
+        if embeddings is not None:
+            source_embeddings = embeddings[0]
+            target_embeddings = embeddings[1]
+        else:
+            return {}
+        alignments = self.get_alignments(source_embeddings, target_embeddings, source, object_in)
+        if alignments is not None:
+            match_dict = alignments[0]
+            manual_dict = alignments[1]
+            lines_with_no_match = alignments[2]
+            for key in match_dict:
+                source_reformatted.append(source[key])
+                target_refromatted.append(target_corp[match_dict[key][0]])
+            print(str(dt.datetime.now()) + " : Match Bucket Filled.")
+            if len(manual_dict.keys()) > 0:
+                for key in manual_dict:
+                    manual_src.append(source[key])
+                    manual_trgt.append(target_corp[manual_dict[key][0]])
+            print(str(dt.datetime.now()) + " : Manual Bucket Filled.")
+            print(str(dt.datetime.now()) + " : No Match Bucket Filled.")
+            output_dict = self.generate_output(source_reformatted, target_refromatted, manual_src, manual_trgt,
                                            lines_with_no_match, path, path_indic)
-        result = self.build_final_response(path, path_indic, output_dict, object_in)
-        repo.update_job(result, object_in["jobID"])
+            result = self.build_final_response(path, path_indic, output_dict, object_in)
+            repo.update_job(result, object_in["jobID"])
+            print(str(dt.datetime.now()) + " : Sentences aligned Successfully!")
+        else:
+            return {}
+
+
+
+    def parse_in(self, full_path, full_path_indic, object_in):
+        try:
+            source, target_corp = alignmentutils.parse_input_file(full_path, full_path_indic)
+            return source, target_corp
+        except Exception as e:
+            print(str(dt.datetime.now()) + " : Exception while parsing the input: ", e)
+            traceback.print_exc()
+            self.update_job_status("FAILED", object_in, "Exception while parsing the input")
+            return None
+
+    def build_embeddings(self, source, target_corp, object_in):
+        try:
+            source_embeddings, target_embeddings = self.build_index(source, target_corp)
+            return source_embeddings, target_embeddings
+        except Exception as e:
+            print(str(dt.datetime.now()) + " : Exception while vectorising sentences: ", e)
+            traceback.print_exc()
+            self.update_job_status("FAILED", object_in, "Exception while vectorising sentences")
+            return None
+
+    def get_alignments(self, source_embeddings, target_embeddings, source, object_in):
+        match_dict = {}
+        manual_dict = {}
+        lines_with_no_match = []
+        try:
+            for i, embedding in enumerate(source_embeddings):
+                trgt = self.get_target_sentence(target_embeddings, embedding, source[i])
+                if trgt is not None:
+                    if trgt[2] is "MATCH":
+                        match_dict[i] = trgt[0], trgt[1]
+                    else:
+                        manual_dict[i] = trgt[0], trgt[1]
+                else:
+                    lines_with_no_match.append(source[i])
+            return match_dict, manual_dict, lines_with_no_match
+        except Exception as e:
+            print(str(dt.datetime.now()) + " : Exception while aligning sentences: ", e)
+            traceback.print_exc()
+            self.update_job_status("FAILED", object_in, "Exception while aligning sentences")
+            return None
+
+    def update_job_status(self, status, object_in, cause):
+        object_in["status"] = status
+        object_in["endTime"] = str(dt.datetime.now())
+        if cause is not None:
+            object_in["cause"] = cause
+
+        repo.update_job(object_in, object_in["jobID"])
 
     def generate_output(self, source_reformatted, target_refromatted, manual_src, manual_trgt, nomatch_src, path, path_indic):
         output_source = directory_path + file_path_delimiter + res_suffix + path
@@ -109,7 +167,7 @@ class AlignmentService:
     def build_final_response(self, source, target, output, object_in):
         result = {"status": "COMPLETED",
                   "jobID": object_in["jobID"],
-                  "startTime": object_in["start_time"],
+                  "startTime": object_in["startTime"],
                   "endTime": str(dt.datetime.now()),
                   "input": {
                       "source": source,

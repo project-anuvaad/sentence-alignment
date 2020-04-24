@@ -1,4 +1,5 @@
 import json
+import sys
 import traceback
 from json import loads
 
@@ -26,19 +27,19 @@ def instantiate():
 def consume():
     consumer = instantiate()
     service = AlignmentService()
-    while True:
-        try:
-            for msg in consumer:
-                print(str(dt.datetime.now()) + " : Consuming from the Kafka Queue......")
-                data = msg.value
-                print(data)
-                service.process(data)
-        except Exception as e:
-            print(str(dt.datetime.now()) + " : Exception while consuming: " + str(e))
-            traceback.print_exc()
+    print(str(dt.datetime.now()) + " : Consumer running.......")
+    try:
+        for msg in consumer:
+            print(str(dt.datetime.now()) + " : Consuming from the Kafka Queue......")
+            data = msg.value
+            service.process(data)
+    except KeyboardInterrupt:
+        sys.exit()
+    except Exception as e:
+        print(str(dt.datetime.now()) + " : Exception while consuming: " + str(e))
+        traceback.print_exc()
 
 def handle_json(x):
-    print("Decoding: ", x)
     try:
         return json.loads(x.decode('utf-8'))
     except Exception as e:
@@ -46,4 +47,7 @@ def handle_json(x):
         traceback.print_exc()
         return {}
 
-consume()
+
+if __name__ == '__main__':
+    while True:
+        consume()
