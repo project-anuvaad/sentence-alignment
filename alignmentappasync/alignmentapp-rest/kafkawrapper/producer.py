@@ -1,11 +1,10 @@
 import json
 import traceback
-from json import dumps
 
-from kafka import KafkaProducer
 import os
 import datetime as dt
-import time
+from kafka import KafkaProducer
+
 
 cluster_details = os.environ.get('KAFKA_CLUSTER_DETAILS', 'localhost:9095')
 align_job_topic = os.environ.get('ALIGN_JOB_TOPIC', 'laser-align-job-register')

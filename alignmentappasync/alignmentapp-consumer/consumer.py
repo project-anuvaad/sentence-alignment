@@ -1,7 +1,5 @@
 import json
-import sys
 import traceback
-from json import loads
 
 from kafka import KafkaConsumer
 import os
