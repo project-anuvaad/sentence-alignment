@@ -31,7 +31,7 @@ def searchjobs(job_id):
     response = service.search_jobs(job_id)
     return jsonify(response)
 
-@app.route(context_path + '/health', methods=["GET"])
+@app.route('/health', methods=["GET"])
 def health():
     response = {"code": "200", "status": "ACTIVE"}
     return jsonify(response)
