@@ -1,13 +1,16 @@
 #!/bin/python
+import os
+
 from flask import Flask, jsonify, request
 import datetime as dt
 from service.alignmentservice import AlignmentService
 from utilities.alignmentutils import AlignmentUtils
 
 app = Flask(__name__)
+context_path = os.environ.get('SA_CONTEXT_PATH', '/sentence-alignment')
 
 
-@app.route('/sentence-alignment/alignment/align/async', methods=["POST"])
+@app.route(context_path + '/alignment/align/async', methods=["POST"])
 def createalignmentjob():
     service = AlignmentService()
     util = AlignmentUtils()
@@ -22,10 +25,15 @@ def createalignmentjob():
     service.register_job(response)
     return response
 
-@app.route('/sentence-alignment/alignment/jobs/get/<job_id>', methods=["GET"])
+@app.route(context_path + '/alignment/jobs/get/<job_id>', methods=["GET"])
 def searchjobs(job_id):
     service = AlignmentService()
     response = service.search_jobs(job_id)
+    return jsonify(response)
+
+@app.route(context_path + '/health', methods=["GET"])
+def health():
+    response = {"code": "200", "status": "ACTIVE"}
     return jsonify(response)
 
 
