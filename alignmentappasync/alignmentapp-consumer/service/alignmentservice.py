@@ -1,5 +1,6 @@
 #!/bin/python
 import codecs
+import logging
 import os
 import traceback
 
@@ -11,6 +12,7 @@ from laser.laser import Laser
 from utilities.alignmentutils import AlignmentUtils
 from repository.alignmentrepository import AlignmentRepository
 
+log = logging.getLogger('file')
 directory_path = os.environ.get('SA_DIRECTORY_PATH', r'C:\Users\Vishal\Desktop\anuvaad\Facebook LASER\resources\Input\length-wise')
 res_suffix = 'response-'
 man_suffix = 'manual-'
@@ -73,18 +75,18 @@ class AlignmentService:
             for key in match_dict:
                 source_reformatted.append(source[key])
                 target_refromatted.append(target_corp[match_dict[key][0]])
-            print(str(dt.datetime.now()) + " : Match Bucket Filled.")
+            log.info(str(dt.datetime.now()) + " : Match Bucket Filled.")
             if len(manual_dict.keys()) > 0:
                 for key in manual_dict:
                     manual_src.append(source[key])
                     manual_trgt.append(target_corp[manual_dict[key][0]])
-            print(str(dt.datetime.now()) + " : Manual Bucket Filled.")
-            print(str(dt.datetime.now()) + " : No Match Bucket Filled.")
+            log.info(str(dt.datetime.now()) + " : Manual Bucket Filled.")
+            log.info(str(dt.datetime.now()) + " : No Match Bucket Filled.")
             output_dict = self.generate_output(source_reformatted, target_refromatted, manual_src, manual_trgt,
                                            lines_with_no_match, path, path_indic)
             result = self.build_final_response(path, path_indic, output_dict, object_in)
             repo.update_job(result, object_in["jobID"])
-            print(str(dt.datetime.now()) + " : Sentences aligned Successfully!")
+            log.info(str(dt.datetime.now()) + " : Sentences aligned Successfully!")
         else:
             return {}
 
@@ -95,8 +97,8 @@ class AlignmentService:
             source, target_corp = alignmentutils.parse_input_file(full_path, full_path_indic)
             return source, target_corp
         except Exception as e:
-            print(str(dt.datetime.now()) + " : Exception while parsing the input: ", e)
-            traceback.print_exc()
+            log.error(str(dt.datetime.now()) + " : Exception while parsing the input: ", e)
+            log.error(str(traceback.print_exc()))
             self.update_job_status("FAILED", object_in, "Exception while parsing the input")
             return None
 
@@ -105,8 +107,8 @@ class AlignmentService:
             source_embeddings, target_embeddings = self.build_index(source, target_corp)
             return source_embeddings, target_embeddings
         except Exception as e:
-            print(str(dt.datetime.now()) + " : Exception while vectorising sentences: ", e)
-            traceback.print_exc()
+            log.error(str(dt.datetime.now()) + " : Exception while vectorising sentences: ", e)
+            log.error(str(traceback.print_exc()))
             self.update_job_status("FAILED", object_in, "Exception while vectorising sentences")
             return None
 
@@ -126,8 +128,8 @@ class AlignmentService:
                     lines_with_no_match.append(source[i])
             return match_dict, manual_dict, lines_with_no_match
         except Exception as e:
-            print(str(dt.datetime.now()) + " : Exception while aligning sentences: ", e)
-            traceback.print_exc()
+            log.error(str(dt.datetime.now()) + " : Exception while aligning sentences: ", e)
+            log.error(str(traceback.print_exc()))
             self.update_job_status("FAILED", object_in, "Exception while aligning sentences")
             return None
 

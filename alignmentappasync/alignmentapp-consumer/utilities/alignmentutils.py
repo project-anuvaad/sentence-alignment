@@ -2,6 +2,7 @@
 import binascii
 import codecs
 import json
+import logging
 import os
 import datetime as dt
 
@@ -10,6 +11,7 @@ import numpy as np
 import csv
 import time
 
+log = logging.getLogger('file')
 two_files = os.environ.get('TWO_FILES', True)
 no_of_words = os.environ.get('WORD_LENGTH', 200)
 file_encoding = os.environ.get('FILE_ENCODING', 'utf-16')
@@ -23,7 +25,7 @@ class AlignmentUtils:
     def parse_input_file(self, path_eng, path_indic):
         source = []
         target_corp = []
-        print(str(dt.datetime.now()) + " : Parsing Input Files.....")
+        log.info(str(dt.datetime.now()) + " : Parsing Input Files.....")
         if two_files:
             with codecs.open(path_eng, 'r', file_encoding) as txt_file:
                 for row in txt_file:
@@ -41,7 +43,7 @@ class AlignmentUtils:
                     if len(row) != 0:
                         source.append(row[0])
                         target_corp.append(row[1])
-        print(str(dt.datetime.now()) + " : Done.")
+        log.info(str(dt.datetime.now()) + " : Done.")
         return source, target_corp
 
 

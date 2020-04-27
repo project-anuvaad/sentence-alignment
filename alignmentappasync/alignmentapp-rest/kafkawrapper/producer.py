@@ -1,11 +1,12 @@
 import json
+import logging
 import traceback
 
 import os
 import datetime as dt
 from kafka import KafkaProducer
 
-
+log = logging.getLogger('file')
 cluster_details = os.environ.get('KAFKA_CLUSTER_DETAILS', 'localhost:9095')
 align_job_topic = os.environ.get('ALIGN_JOB_TOPIC', 'laser-align-job-register')
 align_job_topic_partitions = os.environ.get('ALIGN_JOB_TOPIC_PARTITIONS', 2)
@@ -24,12 +25,12 @@ class Producer:
 
     def push_to_queue(self, object_in):
         producer = self.instantiate()
-        print(str(dt.datetime.now()) + " : Pushing to the Kafka Queue......")
+        log.info(str(dt.datetime.now()) + " : Pushing to the Kafka Queue......")
         try:
-            print(object_in)
+            log.info(object_in)
             producer.send(align_job_topic, value=object_in)
             producer.flush()
-            print(str(dt.datetime.now()) + " : Done.")
+            log.info(str(dt.datetime.now()) + " : Done.")
         except Exception as e:
-            print("Exception while producing: " + str(e))
-            traceback.print_exc()
+            log.error("Exception while producing: " + str(e))
+            log.error(str(traceback.print_exc()))

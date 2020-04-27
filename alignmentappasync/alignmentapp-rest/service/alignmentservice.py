@@ -1,5 +1,6 @@
 #!/bin/python
 import codecs
+import logging
 import os
 
 import datetime as dt
@@ -8,7 +9,7 @@ from utilities.alignmentutils import AlignmentUtils
 from repository.alignmentrepository import AlignmentRepository
 from kafkawrapper.producer import Producer
 
-
+log = logging.getLogger('file')
 alignmentutils = AlignmentUtils()
 repo = AlignmentRepository()
 producer = Producer()
@@ -20,7 +21,7 @@ class AlignmentService:
 
     def register_job(self, object_in):
         repo.create_job(object_in)
-        print(str(dt.datetime.now()) + " : JOB ID: ", object_in["jobID"])
+        log.info(str(dt.datetime.now()) + " : JOB ID: ", object_in["jobID"])
         del object_in['_id']
         producer.push_to_queue(object_in)
 

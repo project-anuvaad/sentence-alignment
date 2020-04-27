@@ -1,4 +1,5 @@
 import json
+import logging
 import traceback
 
 from kafka import KafkaConsumer
@@ -6,6 +7,7 @@ import os
 import datetime as dt
 from service.alignmentservice import AlignmentService
 
+log = logging.getLogger('file')
 cluster_details = os.environ.get('KAFKA_CLUSTER_DETAILS', 'localhost:9092')
 align_job_topic = os.environ.get('ALIGN_JOB_TOPIC', 'laser-align-job-register')
 align_job_consumer_grp = os.environ.get('ALIGN_JOB_CONSUMER_GRP', 'laser-align-job-consumer-group')
@@ -25,24 +27,22 @@ def instantiate():
 def consume():
     consumer = instantiate()
     service = AlignmentService()
-    print(str(dt.datetime.now()) + " : Consumer running.......")
+    log.info(str(dt.datetime.now()) + " : Consumer running.......")
     try:
         for msg in consumer:
-            print(str(dt.datetime.now()) + " : Consuming from the Kafka Queue......")
+            log.info(str(dt.datetime.now()) + " : Consuming from the Kafka Queue......")
             data = msg.value
             service.process(data)
-    except KeyboardInterrupt:
-        sys.exit()
     except Exception as e:
-        print(str(dt.datetime.now()) + " : Exception while consuming: " + str(e))
-        traceback.print_exc()
+        log.error(str(dt.datetime.now()) + " : Exception while consuming: " + str(e))
+        log.error(str(traceback.print_exc()))
 
 def handle_json(x):
     try:
         return json.loads(x.decode('utf-8'))
     except Exception as e:
-        print(str(dt.datetime.now()) + " : Exception while deserialising: " + str(e))
-        traceback.print_exc()
+        log.error(str(dt.datetime.now()) + " : Exception while deserialising: " + str(e))
+        log.error(str(traceback.print_exc()))
         return {}
 
 

@@ -1,4 +1,5 @@
 #!/bin/python
+import logging
 import os
 
 from flask import Flask, jsonify, request
