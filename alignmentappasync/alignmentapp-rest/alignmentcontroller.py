@@ -7,7 +7,7 @@ from utilities.alignmentutils import AlignmentUtils
 app = Flask(__name__)
 
 
-@app.route('/sentence-alignment/files/align/async', methods=["POST"])
+@app.route('/sentence-alignment/alignment/align/async', methods=["POST"])
 def createalignmentjob():
     service = AlignmentService()
     util = AlignmentUtils()
