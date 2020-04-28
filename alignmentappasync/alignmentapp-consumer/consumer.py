@@ -12,7 +12,7 @@ from flask import jsonify
 from laser.laser import Laser
 from utilities.alignmentutils import AlignmentUtils
 from repository.alignmentrepository import AlignmentRepository
-from kafkawrapper.consumer import Consumer
+from kafkawrapper.kafkaconsumer import Consumer
 
 log = logging.getLogger('file')
 directory_path = os.environ.get('SA_DIRECTORY_PATH',

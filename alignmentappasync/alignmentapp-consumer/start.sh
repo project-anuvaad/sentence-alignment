@@ -1,1 +1,1 @@
-python alignmentservice.py
+python consumer.py
