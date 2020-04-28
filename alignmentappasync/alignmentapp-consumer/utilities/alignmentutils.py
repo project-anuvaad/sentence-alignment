@@ -4,12 +4,10 @@ import codecs
 import json
 import logging
 import os
-import datetime as dt
 
 import requests
 import numpy as np
 import csv
-import time
 
 log = logging.getLogger('file')
 two_files = os.environ.get('TWO_FILES', True)
@@ -25,7 +23,7 @@ class AlignmentUtils:
     def parse_input_file(self, path_eng, path_indic):
         source = []
         target_corp = []
-        log.info(str(dt.datetime.now()) + " : Parsing Input Files.....")
+        log.info("Parsing Input Files.....")
         if two_files:
             with codecs.open(path_eng, 'r', file_encoding) as txt_file:
                 for row in txt_file:
@@ -43,7 +41,7 @@ class AlignmentUtils:
                     if len(row) != 0:
                         source.append(row[0])
                         target_corp.append(row[1])
-        log.info(str(dt.datetime.now()) + " : Done.")
+        log.info("Done.")
         return source, target_corp
 
 

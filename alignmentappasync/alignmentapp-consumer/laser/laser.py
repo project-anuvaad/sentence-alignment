@@ -6,7 +6,6 @@ from functools import partial
 
 import requests
 import multiprocessing
-import datetime as dt
 
 log = logging.getLogger('file')
 laser_url = os.environ.get('LASER_PATH', 'http://127.0.0.1:8050/vectorize')
@@ -25,16 +24,16 @@ class Laser:
 
     def vecotrize_sentences(self, source, target):
         pool = multiprocessing.Pool(no_of_processes)
-        log.info(str(dt.datetime.now()) + " : Vectorizing Source.......")
+        log.info("Vectorizing Source.......")
         processed_source = self.convert_to_list_of_tuples(source)
         func = partial(self.get_vect, lang ="en")
         source_list = pool.map_async(func, processed_source).get()
-        log.info(str(dt.datetime.now()) + " : Done.")
-        log.info(str(dt.datetime.now()) + " : Vectorizing Target.......")
+        log.info("Done.")
+        log.info("Vectorizing Target.......")
         processed_target = self.convert_to_list_of_tuples(target)
         func = partial(self.get_vect, lang = "hi")
         target_list = pool.map_async(func, processed_target).get()
-        log.info(str(dt.datetime.now()) + " : Done.")
+        log.info("Done.")
         pool.close()
         return self.align_lists(source_list, target_list)
 

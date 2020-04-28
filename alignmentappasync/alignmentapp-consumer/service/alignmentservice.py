@@ -75,18 +75,18 @@ class AlignmentService:
             for key in match_dict:
                 source_reformatted.append(source[key])
                 target_refromatted.append(target_corp[match_dict[key][0]])
-            log.info(str(dt.datetime.now()) + " : Match Bucket Filled.")
+            log.info("Match Bucket Filled.")
             if len(manual_dict.keys()) > 0:
                 for key in manual_dict:
                     manual_src.append(source[key])
                     manual_trgt.append(target_corp[manual_dict[key][0]])
-            log.info(str(dt.datetime.now()) + " : Manual Bucket Filled.")
-            log.info(str(dt.datetime.now()) + " : No Match Bucket Filled.")
+            log.info("Manual Bucket Filled.")
+            log.info("No Match Bucket Filled.")
             output_dict = self.generate_output(source_reformatted, target_refromatted, manual_src, manual_trgt,
                                            lines_with_no_match, path, path_indic)
             result = self.build_final_response(path, path_indic, output_dict, object_in)
             repo.update_job(result, object_in["jobID"])
-            log.info(str(dt.datetime.now()) + " : Sentences aligned Successfully!")
+            log.info("Sentences aligned Successfully! JOB ID: " + str(object_in["jobID"]))
         else:
             return {}
 
@@ -97,7 +97,7 @@ class AlignmentService:
             source, target_corp = alignmentutils.parse_input_file(full_path, full_path_indic)
             return source, target_corp
         except Exception as e:
-            log.error(str(dt.datetime.now()) + " : Exception while parsing the input: ", e)
+            log.error("Exception while parsing the input: " + str(e))
             log.error(str(traceback.print_exc()))
             self.update_job_status("FAILED", object_in, "Exception while parsing the input")
             return None
@@ -107,7 +107,7 @@ class AlignmentService:
             source_embeddings, target_embeddings = self.build_index(source, target_corp)
             return source_embeddings, target_embeddings
         except Exception as e:
-            log.error(str(dt.datetime.now()) + " : Exception while vectorising sentences: ", e)
+            log.error("Exception while vectorising sentences: " + str(e))
             log.error(str(traceback.print_exc()))
             self.update_job_status("FAILED", object_in, "Exception while vectorising sentences")
             return None
@@ -128,7 +128,7 @@ class AlignmentService:
                     lines_with_no_match.append(source[i])
             return match_dict, manual_dict, lines_with_no_match
         except Exception as e:
-            log.error(str(dt.datetime.now()) + " : Exception while aligning sentences: ", e)
+            log.error("Exception while aligning sentences: " + str(e))
             log.error(str(traceback.print_exc()))
             self.update_job_status("FAILED", object_in, "Exception while aligning sentences")
             return None
@@ -138,7 +138,6 @@ class AlignmentService:
         object_in["endTime"] = str(dt.datetime.now())
         if cause is not None:
             object_in["cause"] = cause
-
         repo.update_job(object_in, object_in["jobID"])
 
     def generate_output(self, source_reformatted, target_refromatted, manual_src, manual_trgt, nomatch_src, path, path_indic):

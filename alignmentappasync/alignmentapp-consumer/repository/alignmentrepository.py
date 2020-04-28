@@ -1,14 +1,6 @@
 #!/bin/python
-import binascii
-import codecs
-import json
 import os
 import pymongo
-
-import requests
-import numpy as np
-import csv
-import time
 
 mongo_client = os.environ.get('MONGO_CLIENT', 'mongodb://localhost:27017/')
 mongo_alignment_db = os.environ.get('MONGO_ALIGNMENT_DB', 'anuvaad-laser-alignment')

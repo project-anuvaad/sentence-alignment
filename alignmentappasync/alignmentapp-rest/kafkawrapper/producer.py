@@ -25,12 +25,12 @@ class Producer:
 
     def push_to_queue(self, object_in):
         producer = self.instantiate()
-        log.info(str(dt.datetime.now()) + " : Pushing to the Kafka Queue......")
+        log.info("Pushing to the Kafka Queue......")
         try:
             log.info(object_in)
             producer.send(align_job_topic, value=object_in)
             producer.flush()
-            log.info(str(dt.datetime.now()) + " : Done.")
+            log.info("Done.")
         except Exception as e:
             log.error("Exception while producing: " + str(e))
             log.error(str(traceback.print_exc()))

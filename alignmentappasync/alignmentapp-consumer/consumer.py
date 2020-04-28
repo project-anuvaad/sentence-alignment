@@ -4,7 +4,6 @@ import traceback
 
 from kafka import KafkaConsumer
 import os
-import datetime as dt
 from service.alignmentservice import AlignmentService
 from logging.config import dictConfig
 
@@ -29,21 +28,21 @@ def instantiate():
 def consume():
     consumer = instantiate()
     service = AlignmentService()
-    log.info(str(dt.datetime.now()) + " : Consumer running.......")
+    log.info("Consumer running.......")
     try:
         for msg in consumer:
-            log.info(str(dt.datetime.now()) + " : Consuming from the Kafka Queue......")
+            log.info("Consuming from the Kafka Queue......")
             data = msg.value
             service.process(data)
     except Exception as e:
-        log.error(str(dt.datetime.now()) + " : Exception while consuming: " + str(e))
+        log.error("Exception while consuming: " + str(e))
         log.error(str(traceback.print_exc()))
 
 def handle_json(x):
     try:
         return json.loads(x.decode('utf-8'))
     except Exception as e:
-        log.error(str(dt.datetime.now()) + " : Exception while deserialising: " + str(e))
+        log.error("Exception while deserialising: " + str(e))
         log.error(str(traceback.print_exc()))
         return {}
 
