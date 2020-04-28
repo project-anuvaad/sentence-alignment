@@ -12,7 +12,7 @@ import time
 
 mongo_client = os.environ.get('MONGO_CLIENT', 'mongodb://localhost:27017/')
 mongo_alignment_db = os.environ.get('MONGO_ALIGNMENT_DB', 'anuvaad-laser-alignment')
-mongo_alignment_col = os.environ.get('MONGO_ALIGNMENT_COL', 'alignment-job')
+mongo_alignment_col = os.environ.get('MONGO_ALIGNMENT_COL', 'alignment-job-registry')
 
 class AlignmentRepository:
 
@@ -31,9 +31,10 @@ class AlignmentRepository:
 
     def update_job(self, object_in, job_id):
         col = self.instantiate()
-        query = {"jobID" : job_id}
-        new = {"$set": object_in}
-        col.update_one(query, new)
+        col.replace_one(
+            {"jobID" : job_id},
+            object_in
+        )
 
     def search_job(self, job_id):
         col = self.instantiate()

@@ -134,7 +134,7 @@ class AlignmentService:
     def build_final_response(self, source, target, output, object_in):
         result = {"status": "COMPLETED",
                   "jobID": object_in["jobID"],
-                  "startTime": object_in["start_time"],
+                  "startTime": object_in["startTime"],
                   "endTime": str(dt.datetime.now()),
                   "input": {
                       "source": source,

@@ -10,7 +10,7 @@ from logging.config import dictConfig
 
 log = logging.getLogger('file')
 cluster_details = os.environ.get('KAFKA_CLUSTER_DETAILS', 'localhost:9092')
-align_job_topic = "laser-align-job"
+align_job_topic = "laser-align"
 #align_job_topic = os.environ.get('ALIGN_JOB_TOPIC', 'laser-align-job-register')
 align_job_consumer_grp = os.environ.get('ALIGN_JOB_CONSUMER_GRP', 'laser-align-job-consumer-group')
 
@@ -22,6 +22,7 @@ def instantiate():
                              group_id=align_job_consumer_grp,
                              auto_offset_reset='earliest',
                              enable_auto_commit=True,
+                             max_poll_records=1,
                              value_deserializer=lambda x: handle_json(x))
     return consumer
 

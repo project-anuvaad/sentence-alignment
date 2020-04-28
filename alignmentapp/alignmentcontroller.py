@@ -25,7 +25,7 @@ def alignsentences():
     response = {}
     try:
         service.register_job(obj, False)
-        response = service.process(obj, False)
+        response = service.process(obj)
         print(str(dt.datetime.now()) + " : Aligned Successfully (" + source_file + " | " + target_file + ")")
     except Exception as e:
         print("An error has occured while aligning: ", e)

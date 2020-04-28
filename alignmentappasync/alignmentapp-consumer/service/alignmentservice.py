@@ -44,6 +44,7 @@ class AlignmentService:
             return min_index, min_distance, "MANUAL"
 
     def process(self, object_in):
+        log.info("Alignment process starts for job: " + str(object_in["jobID"]))
         source_reformatted = []
         target_refromatted = []
         manual_src = []
@@ -89,8 +90,6 @@ class AlignmentService:
             log.info("Sentences aligned Successfully! JOB ID: " + str(object_in["jobID"]))
         else:
             return {}
-
-
 
     def parse_in(self, full_path, full_path_indic, object_in):
         try:
