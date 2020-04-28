@@ -249,5 +249,6 @@ def build_final_response(source, target, output, object_in):
 
 
 if __name__ == '__main__':
-    log.info("Consumer running.......")
-    process()
+    while True:
+        log.info("Consumer running.......")
+        process()
