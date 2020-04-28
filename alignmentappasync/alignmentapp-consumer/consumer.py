@@ -10,7 +10,8 @@ from logging.config import dictConfig
 
 log = logging.getLogger('file')
 cluster_details = os.environ.get('KAFKA_CLUSTER_DETAILS', 'localhost:9092')
-align_job_topic = "laser-align"
+consumer_poll_interval = os.environ.get('CONSUMER_POLL_INTERVAL', 10)
+align_job_topic = "laser-align-job-register-a"
 #align_job_topic = os.environ.get('ALIGN_JOB_TOPIC', 'laser-align-job-register')
 align_job_consumer_grp = os.environ.get('ALIGN_JOB_CONSUMER_GRP', 'laser-align-job-consumer-group')
 
@@ -24,6 +25,7 @@ def instantiate():
                              enable_auto_commit=True,
                              max_poll_records=1,
                              value_deserializer=lambda x: handle_json(x))
+    consumer.poll(consumer_poll_interval)
     return consumer
 
 
@@ -41,6 +43,8 @@ def consume():
     except Exception as e:
         log.error("Exception while consuming: " + str(e))
         log.error(str(traceback.print_exc()))
+    finally:
+        consumer.close()
 
 def handle_json(x):
     try:
