@@ -59,7 +59,7 @@ RUN $LASER/tasks/embed/embed.sh test.txt en test_embed.raw
 RUN python $LASER/tasks/embed/decode.py test_embed.raw
 
 #Open the port 80
-EXPOSE 80
+EXPOSE 8082
 
 COPY ./app.py /app/app.py
 
