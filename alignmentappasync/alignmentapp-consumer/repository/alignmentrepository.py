@@ -19,6 +19,7 @@ class AlignmentRepository:
 
     def update_job(self, object_in, job_id):
         col = self.instantiate()
-        query = {"jobID" : job_id}
-        new = {"$set": object_in}
-        col.update_one(query, new)
+        col.replace_one(
+            {"jobID" : job_id},
+            object_in
+        )
