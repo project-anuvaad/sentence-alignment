@@ -8,7 +8,8 @@ from kafka import KafkaProducer
 
 log = logging.getLogger('file')
 cluster_details = os.environ.get('KAFKA_CLUSTER_DETAILS', 'localhost:9095')
-align_job_topic = os.environ.get('ALIGN_JOB_TOPIC', 'laser-align-job-register')
+align_job_topic = "laser-align-job"
+#align_job_topic = os.environ.get('ALIGN_JOB_TOPIC', 'laser-align-job-register')
 align_job_topic_partitions = os.environ.get('ALIGN_JOB_TOPIC_PARTITIONS', 2)
 
 
