@@ -39,10 +39,10 @@ def write_output(list, path):
             txt_file.write(row + "\r\n")
 
 def process():
-    path = r'C:\Users\Vishal\Desktop\anuvaad\Facebook LASER\resources\Input\length-wise\2000\src-ik-en.txt'
-    path_indic = r'C:\Users\Vishal\Desktop\anuvaad\Facebook LASER\resources\Input\length-wise\2000\target-ik-hi.txt'
-    output_src = r'C:\Users\Vishal\Desktop\anuvaad\Facebook LASER\resources\Input\length-wise\2000\jumbled\src.txt'
-    output_trgt = r'C:\Users\Vishal\Desktop\anuvaad\Facebook LASER\resources\Input\length-wise\2000\jumbled\trgt.txt'
+    path = r'C:\Users\Vishal\Desktop\anuvaad\Facebook LASER\resources\Input\length-wise\5000\src-ik-en.txt'
+    path_indic = r'C:\Users\Vishal\Desktop\anuvaad\Facebook LASER\resources\Input\length-wise\5000\target-ik-hi.txt'
+    output_src = r'C:\Users\Vishal\Desktop\anuvaad\Facebook LASER\resources\Input\length-wise\5000\jumbled\src.txt'
+    output_trgt = r'C:\Users\Vishal\Desktop\anuvaad\Facebook LASER\resources\Input\length-wise\5000\jumbled\trgt.txt'
     src, trgt = parse_input_file(path, path_indic)
     write_output(jumble(src), output_src)
     write_output(jumble(trgt), output_trgt)
