@@ -16,5 +16,6 @@ class AlignmentUtils:
     def __init__(self):
         pass
 
+    # Utility to generate a unique random job ID
     def generate_job_id(self):
         return str(time.time()).replace('.', '')

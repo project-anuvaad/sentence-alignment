@@ -20,6 +20,7 @@ class AlignmentUtils:
     def __init__(self):
         pass
 
+    # Utility to parse input files.
     def parse_input_file(self, path_eng, path_indic):
         source = []
         target_corp = []
@@ -44,13 +45,13 @@ class AlignmentUtils:
         log.info("Done.")
         return source, target_corp
 
-
+    # Utility to write the output to a file
     def write_output(self, list, path):
         with codecs.open(path, 'w', file_encoding) as txt_file:
             for row in list:
                 txt_file.write(row + "\r\n")
 
-
+    # Utility to calculate cosine distances between 2 vectors
     def cscalc(self, vector_one, vector_two):
         vector_one = np.squeeze(vector_one)
         vector_two = np.squeeze(vector_two)
@@ -60,9 +61,12 @@ class AlignmentUtils:
         cos = dot / (norma * normb)
         return cos
 
+    # Post processor to be called after input parsing is sucessfull
+    # If the process is to be run only for sentences of a particular length in the input
     def post_process_input(self, word_count, source):
         source[:] = [line for line in source if (len(line.split()) < word_count)]
 
+    # File to binary converter
     def convert_file_to_binary(self, file_path):
         x = ""
         with open(file_path, 'rb') as f:
@@ -71,6 +75,7 @@ class AlignmentUtils:
         b = bin(int(x, 16)).replace('b', '')
         return b
 
+    # Utility to upload files to anuvaad's upload service
     def upload_file_binary(self, file):
         data = open(file, 'rb')
         response = requests.post(url = upload_url, data = data,
@@ -80,7 +85,7 @@ class AlignmentUtils:
             if key == "data":
                 return value["filepath"]
 
-
+    # Utility to decide (min,max) cs thresholds based on length of setences.
     def get_cs_on_sen_cat(self, sentence):
         sen_len = len(sentence.split())
         if 0 < sen_len <= 10:

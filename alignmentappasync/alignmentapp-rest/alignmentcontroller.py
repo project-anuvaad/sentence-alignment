@@ -12,6 +12,7 @@ app = Flask(__name__)
 context_path = os.environ.get('SA_CONTEXT_PATH', '/sentence-alignment')
 
 
+# REST endpoint to align files
 @app.route(context_path + '/alignment/align/async', methods=["POST"])
 def createalignmentjob():
     service = AlignmentService()
@@ -27,18 +28,21 @@ def createalignmentjob():
     service.register_job(response)
     return response
 
+
+# REST endpoint to fetch job status
 @app.route(context_path + '/alignment/jobs/get/<job_id>', methods=["GET"])
 def searchjobs(job_id):
     service = AlignmentService()
     response = service.search_jobs(job_id)
     return jsonify(response)
 
+# Health endpoint
 @app.route('/health', methods=["GET"])
 def health():
     response = {"code": "200", "status": "ACTIVE"}
     return jsonify(response)
 
-
+# Log config
 dictConfig({
     'version': 1,
     'formatters': {'default': {

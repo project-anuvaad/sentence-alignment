@@ -11,12 +11,14 @@ class AlignmentRepository:
     def __init__(self):
         pass
 
+    # Initialises and fetches mongo client
     def instantiate(self):
         client = pymongo.MongoClient(mongo_client)
         db = client[mongo_alignment_db]
         col = db[mongo_alignment_col]
         return col
 
+    # Updates the object in the mongo collection
     def update_job(self, object_in, job_id):
         col = self.instantiate()
         col.replace_one(

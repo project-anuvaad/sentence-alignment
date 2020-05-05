@@ -27,10 +27,12 @@ class AlignmentService:
     def __init__(self):
         pass
 
+    # Service layer to fetch vectors for all the source and target sentences.
     def build_index(self, source, target_corp):
         source_embeddings, target_embeddings = laser.vecotrize_sentences(source, target_corp)
         return source_embeddings, target_embeddings
 
+    # Service layer to fetch target sentence for a given source sentence.
     def get_target_sentence(self, target_embeddings, source_embedding, src_sent):
         data = np.array(target_embeddings)
         data = data.reshape(data.shape[0], data.shape[2])
@@ -41,8 +43,9 @@ class AlignmentService:
         if min_distance >= max_cs:
             return min_index, min_distance, "MATCH"
         elif min_cs <= min_distance < max_cs:
-            return min_index, min_distance, "MANUAL"
+            return min_index, min_distance, "ALMOST-MATCH"
 
+    # Wrapper method to categorise sentences into MATCH, ALMOST-MATCH and NO-MATCH
     def process(self, object_in):
         log.info("Alignment process starts for job: " + str(object_in["jobID"]))
         source_reformatted = []
@@ -91,6 +94,7 @@ class AlignmentService:
         else:
             return {}
 
+    # Service layer to parse the input file
     def parse_in(self, full_path, full_path_indic, object_in):
         try:
             source, target_corp = alignmentutils.parse_input_file(full_path, full_path_indic)
@@ -101,6 +105,7 @@ class AlignmentService:
             self.update_job_status("FAILED", object_in, "Exception while parsing the input")
             return None
 
+    # Wrapper to build sentence embeddings
     def build_embeddings(self, source, target_corp, object_in):
         try:
             source_embeddings, target_embeddings = self.build_index(source, target_corp)
@@ -111,6 +116,7 @@ class AlignmentService:
             self.update_job_status("FAILED", object_in, "Exception while vectorising sentences")
             return None
 
+    # Wrapper method to align and categorise sentences
     def get_alignments(self, source_embeddings, target_embeddings, source, object_in):
         match_dict = {}
         manual_dict = {}
@@ -132,6 +138,7 @@ class AlignmentService:
             self.update_job_status("FAILED", object_in, "Exception while aligning sentences")
             return None
 
+    # Service layer to update job status
     def update_job_status(self, status, object_in, cause):
         object_in["status"] = status
         object_in["endTime"] = str(dt.datetime.now())
@@ -139,6 +146,7 @@ class AlignmentService:
             object_in["cause"] = cause
         repo.update_job(object_in, object_in["jobID"])
 
+    # Service layer to generate output
     def generate_output(self, source_reformatted, target_refromatted, manual_src, manual_trgt, nomatch_src, path, path_indic):
         output_source = directory_path + file_path_delimiter + res_suffix + path
         output_target = directory_path + file_path_delimiter + res_suffix + path_indic
@@ -153,7 +161,7 @@ class AlignmentService:
         return self.get_response_paths(output_source, output_target,
                                        output_manual_src, output_manual_trgt, output_nomatch)
 
-
+    # Service layer to upload the files generated as output to the alignment process
     def get_response_paths(self, output_src, output_trgt, output_manual_src, output_manual_trgt, output_nomatch):
         output_src = alignmentutils.upload_file_binary(output_src)
         output_trgt = alignmentutils.upload_file_binary(output_trgt)
@@ -164,6 +172,7 @@ class AlignmentService:
                        "manual_trgt": output_manual_trgt, "nomatch": output_nomatch }
         return output_dict
 
+    # Response formatter
     def build_final_response(self, source, target, output, object_in):
         result = {"status": "COMPLETED",
                   "jobID": object_in["jobID"],
@@ -174,15 +183,15 @@ class AlignmentService:
                       "target": target
                   },
                   "output": {
-                      "aligned": {
+                      "match": {
                           "source": output["source"],
                           "target": output["target"]
                       },
-                      "manual": {
+                      "almostMatch": {
                           "source": output["manual_src"],
                           "target": output["manual_trgt"]
                       },
-                      "nomatch": {
+                      "noMatch": {
                           "source": output["nomatch"]
                       }
                   }}

@@ -16,12 +16,14 @@ class Laser:
     def __init__(self):
         pass
 
+    # Method to make REST calls to LASER and fetch sentence embeddings
     def get_vect(self, query_tuple, lang):
         query_in = query_tuple[1]
         params = {"q": query_in, "lang": lang}
         resp = requests.get(url=laser_url, params=params).json()
         return query_tuple[0], resp["embedding"]
 
+    # Wrapper method that forks multiple process for vectorisation and combines all the results
     def vecotrize_sentences(self, source, target):
         pool = multiprocessing.Pool(no_of_processes)
         log.info("Vectorizing Source.......")
@@ -37,6 +39,7 @@ class Laser:
         pool.close()
         return self.align_lists(source_list, target_list)
 
+    # Utility for type conversion from list of strings to list of tuples.
     def convert_to_list_of_tuples(self, list):
         final_list = []
         for i, line in enumerate(list):
@@ -44,6 +47,7 @@ class Laser:
             final_list.append(tup)
         return final_list
 
+    # Utility to align lists
     def align_lists(self, source, target):
         source_emb = list(OrderedDict(sorted(dict(source).items())).values())
         trgt_emb = list(OrderedDict(sorted(dict(target).items())).values())

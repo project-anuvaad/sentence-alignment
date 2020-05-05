@@ -15,7 +15,7 @@ align_job_topic = "laser-align-job-register-a"
 #align_job_topic = os.environ.get('ALIGN_JOB_TOPIC', 'laser-align-job-register')
 align_job_consumer_grp = os.environ.get('ALIGN_JOB_CONSUMER_GRP', 'laser-align-job-consumer-group')
 
-
+# Method to instantiate the kafka consumer
 def instantiate():
     consumer = KafkaConsumer(align_job_topic,
                              bootstrap_servers=[cluster_details],
@@ -28,7 +28,7 @@ def instantiate():
     consumer.poll(consumer_poll_interval)
     return consumer
 
-
+# Method to read and process the requests from the kafka queue
 def consume():
     consumer = instantiate()
     service = AlignmentService()
@@ -46,6 +46,7 @@ def consume():
     finally:
         consumer.close()
 
+# Method that provides a deserialiser for the kafka record.
 def handle_json(x):
     try:
         return json.loads(x.decode('utf-8'))
@@ -54,7 +55,7 @@ def handle_json(x):
         log.error(str(traceback.print_exc()))
         return {}
 
-
+# Log config
 dictConfig({
     'version': 1,
     'formatters': {'default': {

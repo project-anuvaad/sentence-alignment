@@ -18,12 +18,15 @@ class Producer:
     def __init__(self):
         pass
 
+    # Method to instantiate producer
+    # Any other method that needs a producer will get it from her
     def instantiate(self):
         producer = KafkaProducer(bootstrap_servers=[cluster_details],
                                  api_version=(1, 0, 0),
                                  value_serializer=lambda x: json.dumps(x).encode('utf-8'))
         return producer
 
+    # Method to push records to a topic in the kafka queue
     def push_to_queue(self, object_in):
         producer = self.instantiate()
         log.info("Pushing to the Kafka Queue......")
