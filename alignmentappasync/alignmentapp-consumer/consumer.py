@@ -37,7 +37,6 @@ def consume():
         data = {}
         for msg in consumer:
             log.info("Consuming from the Kafka Queue......")
-            log.info(msg)
             data = msg.value
             break
         service.process(data)

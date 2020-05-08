@@ -27,11 +27,13 @@ class Laser:
     def vecotrize_sentences(self, source, target, src_loc, trgt_loc):
         pool = multiprocessing.Pool(no_of_processes)
         log.info("Vectorizing Source.......")
+        log.info("Text Locale: " + src_loc)
         processed_source = self.convert_to_list_of_tuples(source)
         func = partial(self.get_vect, lang = src_loc)
         source_list = pool.map_async(func, processed_source).get()
         log.info("Done.")
         log.info("Vectorizing Target.......")
+        log.info("Text Locale: " + trgt_loc)
         processed_target = self.convert_to_list_of_tuples(target)
         func = partial(self.get_vect, lang = trgt_loc)
         target_list = pool.map_async(func, processed_target).get()
