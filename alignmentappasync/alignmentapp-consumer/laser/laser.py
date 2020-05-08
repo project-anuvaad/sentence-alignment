@@ -24,16 +24,16 @@ class Laser:
         return query_tuple[0], resp["embedding"]
 
     # Wrapper method that forks multiple process for vectorisation and combines all the results
-    def vecotrize_sentences(self, source, target):
+    def vecotrize_sentences(self, source, target, src_loc, trgt_loc):
         pool = multiprocessing.Pool(no_of_processes)
         log.info("Vectorizing Source.......")
         processed_source = self.convert_to_list_of_tuples(source)
-        func = partial(self.get_vect, lang ="en")
+        func = partial(self.get_vect, lang = src_loc)
         source_list = pool.map_async(func, processed_source).get()
         log.info("Done.")
         log.info("Vectorizing Target.......")
         processed_target = self.convert_to_list_of_tuples(target)
-        func = partial(self.get_vect, lang = "hi")
+        func = partial(self.get_vect, lang = trgt_loc)
         target_list = pool.map_async(func, processed_target).get()
         log.info("Done.")
         pool.close()

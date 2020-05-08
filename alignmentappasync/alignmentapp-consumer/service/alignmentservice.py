@@ -28,8 +28,8 @@ class AlignmentService:
         pass
 
     # Service layer to fetch vectors for all the source and target sentences.
-    def build_index(self, source, target_corp):
-        source_embeddings, target_embeddings = laser.vecotrize_sentences(source, target_corp)
+    def build_index(self, source, target_corp, src_loc, trgt_loc):
+        source_embeddings, target_embeddings = laser.vecotrize_sentences(source, target_corp, src_loc, trgt_loc)
         return source_embeddings, target_embeddings
 
     # Service layer to fetch target sentence for a given source sentence.
@@ -52,8 +52,8 @@ class AlignmentService:
         target_refromatted = []
         manual_src = []
         manual_trgt = []
-        path = object_in["source"]
-        path_indic = object_in["target"]
+        path = object_in["input"]["source"]
+        path_indic = object_in["input"]["target"]
         full_path = directory_path + file_path_delimiter + path
         full_path_indic = directory_path + file_path_delimiter + path_indic
         object_in["status"] = "INPROGRESS"
@@ -108,7 +108,9 @@ class AlignmentService:
     # Wrapper to build sentence embeddings
     def build_embeddings(self, source, target_corp, object_in):
         try:
-            source_embeddings, target_embeddings = self.build_index(source, target_corp)
+            src_loc = object_in["input"]["source"]["locale"]
+            trgt_loc = object_in["input"]["target"]["locale"]
+            source_embeddings, target_embeddings = self.build_index(source, target_corp, src_loc, trgt_loc)
             return source_embeddings, target_embeddings
         except Exception as e:
             log.error("Exception while vectorising sentences: " + str(e))

@@ -11,7 +11,7 @@ from logging.config import dictConfig
 log = logging.getLogger('file')
 cluster_details = os.environ.get('KAFKA_CLUSTER_DETAILS', 'localhost:9092')
 consumer_poll_interval = os.environ.get('CONSUMER_POLL_INTERVAL', 10)
-align_job_topic = "laser-align-job-register-a"
+align_job_topic = "laser-align-job-register-b"
 #align_job_topic = os.environ.get('ALIGN_JOB_TOPIC', 'laser-align-job-register')
 align_job_consumer_grp = os.environ.get('ALIGN_JOB_CONSUMER_GRP', 'laser-align-job-consumer-group')
 

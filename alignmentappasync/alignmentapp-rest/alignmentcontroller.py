@@ -21,10 +21,8 @@ def createalignmentjob():
     error = service.validate_input(data)
     if error is not None:
         return error
-    source_file = data["source"]["filepath"]
-    target_file = data["target"]["filepath"]
     job_id = util.generate_job_id()
-    response = {"source": source_file, "target": target_file, "jobID": job_id, "status": "START"}
+    response = {"input": data, "jobID": job_id, "status": "START"}
     service.register_job(response)
     return response
 
