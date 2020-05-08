@@ -52,8 +52,8 @@ class AlignmentService:
         target_refromatted = []
         manual_src = []
         manual_trgt = []
-        path = object_in["input"]["source"]
-        path_indic = object_in["input"]["target"]
+        path = object_in["input"]["source"]["filepath"]
+        path_indic = object_in["input"]["target"]["filepath"]
         full_path = directory_path + file_path_delimiter + path
         full_path_indic = directory_path + file_path_delimiter + path_indic
         object_in["status"] = "INPROGRESS"
@@ -101,7 +101,7 @@ class AlignmentService:
             return source, target_corp
         except Exception as e:
             log.error("Exception while parsing the input: " + str(e))
-            log.error(str(traceback.print_exc()))
+            traceback.print_exc()
             self.update_job_status("FAILED", object_in, "Exception while parsing the input")
             return None
 
@@ -114,7 +114,7 @@ class AlignmentService:
             return source_embeddings, target_embeddings
         except Exception as e:
             log.error("Exception while vectorising sentences: " + str(e))
-            log.error(str(traceback.print_exc()))
+            traceback.print_exc()
             self.update_job_status("FAILED", object_in, "Exception while vectorising sentences")
             return None
 
@@ -136,7 +136,7 @@ class AlignmentService:
             return match_dict, manual_dict, lines_with_no_match
         except Exception as e:
             log.error("Exception while aligning sentences: " + str(e))
-            log.error(str(traceback.print_exc()))
+            traceback.print_exc()
             self.update_job_status("FAILED", object_in, "Exception while aligning sentences")
             return None
 

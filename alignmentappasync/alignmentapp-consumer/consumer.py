@@ -37,12 +37,13 @@ def consume():
         data = {}
         for msg in consumer:
             log.info("Consuming from the Kafka Queue......")
+            log.info(msg)
             data = msg.value
             break
         service.process(data)
     except Exception as e:
         log.error("Exception while consuming: " + str(e))
-        log.error(str(traceback.print_exc()))
+        traceback.print_exc()
     finally:
         consumer.close()
 
@@ -52,7 +53,7 @@ def handle_json(x):
         return json.loads(x.decode('utf-8'))
     except Exception as e:
         log.error("Exception while deserialising: " + str(e))
-        log.error(str(traceback.print_exc()))
+        traceback.print_exc()
         return {}
 
 # Log config

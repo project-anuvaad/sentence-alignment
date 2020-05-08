@@ -37,4 +37,4 @@ class Producer:
             log.info("Done.")
         except Exception as e:
             log.error("Exception while producing: " + str(e))
-            log.error(str(traceback.print_exc()))
+            traceback.print_exc()
