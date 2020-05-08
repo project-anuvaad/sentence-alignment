@@ -22,7 +22,7 @@ def createalignmentjob():
     if error is not None:
         return error
     job_id = util.generate_job_id()
-    response = {"input": data, "jobID": job_id, "status": "START"}
+    response = {"input": str(data), "jobID": job_id, "status": "START"}
     service.register_job(response)
     return response
 
