@@ -86,10 +86,15 @@ class AlignmentService:
                     manual_trgt.append(target_corp[manual_dict[key][0]])
             log.info("Manual Bucket Filled.")
             log.info("No Match Bucket Filled.")
-            output_dict = self.generate_output(source_reformatted, target_refromatted, manual_src, manual_trgt,
+            try:
+                output_dict = self.generate_output(source_reformatted, target_refromatted, manual_src, manual_trgt,
                                            lines_with_no_match, path, path_indic)
-            result = self.build_final_response(path, path_indic, output_dict, object_in)
-            repo.update_job(result, object_in["jobID"])
+                result = self.build_final_response(path, path_indic, output_dict, object_in)
+                repo.update_job(result, object_in["jobID"])
+            except Exception as e:
+                log.error("Exception while writing the output: ", str(e))
+                self.update_job_status("FAILED", object_in, "Exception while writing the output")
+
             log.info("Sentences aligned Successfully! JOB ID: " + str(object_in["jobID"]))
         else:
             return {}
