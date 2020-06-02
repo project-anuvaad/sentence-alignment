@@ -4,6 +4,7 @@ import codecs
 import json
 import logging
 import os
+from datetime import time
 
 import requests
 import numpy as np
@@ -97,3 +98,7 @@ class AlignmentUtils:
         else:
             #LARGE
             return 0.75, 0.8
+
+    # Utility to generate a unique random task ID
+    def generate_task_id(self):
+        return "ALIGN-" + str(time.time()).replace('.', '')

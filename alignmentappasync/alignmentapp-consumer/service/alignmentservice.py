@@ -11,6 +11,7 @@ from flask import jsonify
 from laser.laser import Laser
 from utilities.alignmentutils import AlignmentUtils
 from repository.alignmentrepository import AlignmentRepository
+from kafkawrapper.producer import Producer
 
 log = logging.getLogger('file')
 directory_path = os.environ.get('SA_DIRECTORY_PATH', r'C:\Users\Vishal\Desktop\anuvaad\Facebook LASER\resources\Input\length-wise')
@@ -21,6 +22,7 @@ file_path_delimiter = os.environ.get('FILE_PATH_DELIMITER', '/')
 alignmentutils = AlignmentUtils()
 repo = AlignmentRepository()
 laser = Laser()
+producer = Producer()
 
 
 class AlignmentService:
@@ -45,8 +47,20 @@ class AlignmentService:
         elif min_cs <= min_distance < max_cs:
             return min_index, min_distance, "ALMOST-MATCH"
 
+    # Wrapper to build response compatibile with the anuvaad etl wf manager
+    def getwfresponse(self, object_in, iserror):
+        if iserror:
+            object_in["status"] = "FAILED"
+        else:
+            object_in["status"] = "SUCCESS"
+        object_in["state"] = "SENTENCES-ALIGNED"
+        object_in["taskStartTime"] = object_in["startTime"]
+        object_in["taskEndTime"] = object_in["endTime"]
+
+        return object_in
+
     # Wrapper method to categorise sentences into MATCH, ALMOST-MATCH and NO-MATCH
-    def process(self, object_in):
+    def process(self, object_in, iswf):
         log.info("Alignment process starts for job: " + str(object_in["jobID"]))
         source_reformatted = []
         target_refromatted = []
@@ -91,6 +105,9 @@ class AlignmentService:
                                            lines_with_no_match, path, path_indic)
                 result = self.build_final_response(path, path_indic, output_dict, object_in)
                 repo.update_job(result, object_in["jobID"])
+                if iswf:
+                    wf_res = self.getwfresponse(object_in, False)
+                    producer.push_to_queue(wf_res, True)
             except Exception as e:
                 log.error("Exception while writing the output: ", str(e))
                 self.update_job_status("FAILED", object_in, "Exception while writing the output")

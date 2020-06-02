@@ -5,6 +5,7 @@ import traceback
 from kafka import KafkaConsumer
 import os
 from service.alignmentservice import AlignmentService
+from utilities.alignmentutils import AlignmentUtils
 from logging.config import dictConfig
 
 
@@ -13,6 +14,7 @@ cluster_details = os.environ.get('KAFKA_CLUSTER_DETAILS', 'localhost:9092')
 consumer_poll_interval = os.environ.get('CONSUMER_POLL_INTERVAL', 10)
 align_job_topic = "laser-align-job-register-b"
 #align_job_topic = os.environ.get('ALIGN_JOB_TOPIC', 'laser-align-job-register')
+anu_dp_wf_aligner_in_topic = os.environ.get('ANU_DP_WF_ALIGNER_IN_TOPIC', 'anuvaad-dp-tools-aligner-input')
 align_job_consumer_grp = os.environ.get('ALIGN_JOB_CONSUMER_GRP', 'laser-align-job-consumer-group')
 
 # Method to instantiate the kafka consumer
@@ -35,11 +37,18 @@ def consume():
     log.info("Consumer running.......")
     try:
         data = {}
+        topic = None
         for msg in consumer:
             log.info("Consuming from the Kafka Queue......")
             data = msg.value
+            topic = msg.topic
             break
-        service.process(data)
+        if topic is anu_dp_wf_aligner_in_topic:
+            util = AlignmentUtils()
+            data["taskID"] = util.generate_task_id()
+            service.process(data, True)
+        else:
+            service.process(data, False)
     except Exception as e:
         log.error("Exception while consuming: " + str(e))
         traceback.print_exc()
