@@ -48,16 +48,20 @@ class AlignmentService:
             return min_index, min_distance, "ALMOST-MATCH"
 
     # Wrapper to build response compatibile with the anuvaad etl wf manager
-    def getwfresponse(self, object_in, iserror):
+    def getwfresponse(self, result, object_in, iserror):
+        wfresponse = {"taskID": object_in["taskID"], "jobID": object_in["jobID"], "input": result["input"],
+                      "output": result["output"], "workflowCode": object_in["workflowCode"],
+                      "stepOrder": object_in["stepOrder"]}
         if iserror:
-            object_in["status"] = "FAILED"
+            wfresponse["status"] = "FAILED"
         else:
-            object_in["status"] = "SUCCESS"
-        object_in["state"] = "SENTENCES-ALIGNED"
-        object_in["taskStartTime"] = object_in["startTime"]
-        object_in["taskEndTime"] = object_in["endTime"]
+            wfresponse["status"] = "SUCCESS"
 
-        return object_in
+        wfresponse["state"] = "SENTENCES-ALIGNED"
+        wfresponse["taskStartTime"] = result["startTime"]
+        wfresponse["taskEndTime"] = result["endTime"]
+
+        return wfresponse
 
     # Wrapper method to categorise sentences into MATCH, ALMOST-MATCH and NO-MATCH
     def process(self, object_in, iswf):
@@ -103,10 +107,11 @@ class AlignmentService:
             try:
                 output_dict = self.generate_output(source_reformatted, target_refromatted, manual_src, manual_trgt,
                                            lines_with_no_match, path, path_indic)
+
                 result = self.build_final_response(path, path_indic, output_dict, object_in)
                 repo.update_job(result, object_in["jobID"])
                 if iswf:
-                    wf_res = self.getwfresponse(object_in, False)
+                    wf_res = self.getwfresponse(result, object_in, False)
                     producer.push_to_queue(wf_res, True)
             except Exception as e:
                 log.error("Exception while writing the output: ", str(e))
