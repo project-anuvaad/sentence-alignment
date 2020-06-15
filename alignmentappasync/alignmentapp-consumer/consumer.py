@@ -19,7 +19,8 @@ align_job_consumer_grp = os.environ.get('ALIGN_JOB_CONSUMER_GRP', 'laser-align-j
 
 # Method to instantiate the kafka consumer
 def instantiate():
-    consumer = KafkaConsumer(align_job_topic,
+    topics = [align_job_topic, anu_dp_wf_aligner_in_topic]
+    consumer = KafkaConsumer(*topics,
                              bootstrap_servers=[cluster_details],
                              api_version=(1, 0, 0),
                              group_id=align_job_consumer_grp,
