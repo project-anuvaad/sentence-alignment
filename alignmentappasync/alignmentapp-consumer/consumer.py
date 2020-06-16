@@ -43,6 +43,7 @@ def consume():
             log.info("Consuming from the Kafka Queue......")
             data = msg.value
             topic = msg.topic
+            log.info("Received on Topic: " + topic)
             break
         if topic is anu_dp_wf_aligner_in_topic:
             util = AlignmentUtils()
@@ -51,8 +52,7 @@ def consume():
         else:
             service.process(data, False)
     except Exception as e:
-        log.error("Exception while consuming: " + str(e))
-        traceback.print_exc()
+        log.exception("Exception while consuming: " + str(e))
     finally:
         consumer.close()
 

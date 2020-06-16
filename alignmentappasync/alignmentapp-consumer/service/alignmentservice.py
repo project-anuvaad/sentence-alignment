@@ -66,6 +66,8 @@ class AlignmentService:
     # Wrapper method to categorise sentences into MATCH, ALMOST-MATCH and NO-MATCH
     def process(self, object_in, iswf):
         log.info("Alignment process starts for job: " + str(object_in["jobID"]))
+        if iswf:
+            log.info(object_in)
         source_reformatted = []
         target_refromatted = []
         manual_src = []

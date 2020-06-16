@@ -30,15 +30,15 @@ class Producer:
     # Method to push records to a topic in the kafka queue
     def push_to_queue(self, object_in, iswf):
         producer = self.instantiate()
-        log.info("Pushing to the Kafka Queue......")
         try:
             log.info(object_in)
             if iswf:
                 producer.send(anu_dp_wf_aligner_out_topic, value=object_in)
+                log.info("Pushed to the topic: " + anu_dp_wf_aligner_out_topic)
             else:
                 producer.send(align_job_topic, value=object_in)
+                log.info("Pushed to the topic: " + align_job_topic)
             producer.flush()
-            log.info("Done.")
         except Exception as e:
             log.error("Exception while producing: " + str(e))
             traceback.print_exc()
