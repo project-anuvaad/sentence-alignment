@@ -4,7 +4,7 @@ import codecs
 import json
 import logging
 import os
-from datetime import time
+import time
 
 import requests
 import numpy as np
